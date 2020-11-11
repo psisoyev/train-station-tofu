@@ -5,10 +5,12 @@ import cats.implicits._
 import com.psisoyev.train.station.Event.Arrived
 import com.psisoyev.train.station.arrival.Arrivals.{ Arrival, ArrivalError }
 import com.psisoyev.train.station.arrival.ExpectedTrains.ExpectedTrain
-import com.psisoyev.train.station.{ Actual, City, Event, Logger, To, TrainId, UUIDGen }
+import com.psisoyev.train.station.{ Actual, City, Event, EventId, To, TrainId }
 import cr.pulsar.Producer
 import io.circe.Decoder
 import io.circe.generic.semiauto._
+import tofu.generate.GenUUID
+import tofu.logging.Logging
 
 trait Arrivals[F[_]] {
   def register(arrival: Arrival): F[Either[ArrivalError, Arrived]]
@@ -25,7 +27,7 @@ object Arrivals {
     implicit val arrivalDecoder: Decoder[Arrival] = deriveDecoder
   }
 
-  def make[F[_]: Monad: UUIDGen: Logger](
+  def make[F[_]: Monad: GenUUID: Logging](
     city: City,
     producer: Producer[F, Event],
     expectedTrains: ExpectedTrains[F]
@@ -44,10 +46,10 @@ object Arrivals {
 
     def register(arrival: Arrival): F[Either[ArrivalError, Arrived]] =
       validated(arrival) { train =>
-        F.newEventId
-          .map {
+        F.randomUUID
+          .map { id =>
             Arrived(
-              _,
+              EventId(id),
               arrival.trainId,
               train.from,
               To(city),

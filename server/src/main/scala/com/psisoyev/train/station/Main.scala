@@ -1,13 +1,14 @@
 package com.psisoyev.train.station
 
 import com.psisoyev.train.station.Event.Departed
-import com.psisoyev.train.station.UUIDGen._
 import com.psisoyev.train.station.arrival.{ Arrivals, ExpectedTrains }
 import com.psisoyev.train.station.departure.{ DepartureTracker, Departures }
 import cr.pulsar.schema.circe.circeBytesInject
 import fs2.Stream
 import org.http4s.server.blaze.BlazeServerBuilder
 import org.http4s.implicits._
+import tofu.logging.{ Logging, Logs }
+import tofu.logging.Logging._
 import zio._
 import zio.interop.catz._
 import zio.interop.catz.implicits._
@@ -22,7 +23,8 @@ object Main extends zio.App {
     Resources
       .make[F, Event]
       .use {
-        case Resources(config, producer, consumers, trainRef) =>
+        case Resources(config, producer, consumers, trainRef, logger) =>
+          implicit val logging = logger
           val expectedTrains   = ExpectedTrains.make[F](trainRef)
           val arrivals         = Arrivals.make[F](config.city, producer, expectedTrains)
           val departures       = Departures.make[F](config.city, config.connectedTo, producer)
@@ -49,7 +51,7 @@ object Main extends zio.App {
               .compile
               .drain
 
-          Logger[F].info(s"Started train station ${config.city}") *>
+          Logging[F].info(s"Started train station ${config.city}") *>
             departureListener
               .zipPar(httpServer)
               .unit

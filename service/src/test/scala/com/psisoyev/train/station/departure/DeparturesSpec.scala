@@ -8,7 +8,7 @@ import zio.interop.catz._
 import zio.interop.catz.implicits._
 import zio.test.Assertion._
 import zio.test.environment.TestEnvironment
-import zio.test.{ assert, checkM, suite, testM, ZSpec }
+import zio.test._
 
 object DeparturesSpec extends BaseSpec {
   override def spec: ZSpec[TestEnvironment, Failure] =
@@ -18,10 +18,10 @@ object DeparturesSpec extends BaseSpec {
           for {
             (events, producer) <- fakeProducer[F]
             departures         = Departures.make[F](city, List(), producer)
-            result             <- departures.register(Departure(trainId, to, expected, actual))
+            result             <- departures.register(Departure(trainId, to, expected, actual)).flip
             newEvents          <- events.get
           } yield {
-            assert(result)(isLeft(equalTo(DepartureError.UnexpectedDestination(to.city)))) &&
+            assert(result)(equalTo(DepartureError.UnexpectedDestination(to.city))) &&
             assert(newEvents.isEmpty)(isTrue)
           }
         }
@@ -35,8 +35,8 @@ object DeparturesSpec extends BaseSpec {
             newEvents          <- events.get
           } yield {
             val departed = Departed(eventId, trainId, From(city), to, expected, actual.toTimestamp)
-            assert(result)(isRight(equalTo(departed))) &&
-            assert(result.toSeq == newEvents)(isTrue)
+            assert(result)(equalTo(departed)) &&
+            assert(List(result) == newEvents)(isTrue)
           }
         }
       }

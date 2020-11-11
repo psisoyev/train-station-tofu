@@ -24,8 +24,7 @@ class StationRoutes[F[_]: MonadError[*[_], Throwable]: Defer: JsonDecoder](
     case req @ POST -> Root / "departure" =>
       req
         .asJsonDecode[Departure]
-        .flatMap(departures.register)
-        .flatMap(_.fold(handleDepartureErrors, _ => Ok()))
+        .flatMap(departures.register) *> Ok()
 
   }
 

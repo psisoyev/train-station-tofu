@@ -9,8 +9,11 @@ import cats.effect.concurrent.Ref
 import com.psisoyev.train.station.arrival.ExpectedTrains.ExpectedTrain
 import cr.pulsar.Producer
 import org.apache.pulsar.client.api.MessageId
+import tofu.generate.GenUUID
+import tofu.logging.{ Logging, Logs }
 import zio.Task
 import zio.test.DefaultRunnableSpec
+import zio.interop.catz._
 
 trait BaseSpec extends DefaultRunnableSpec {
   type F[A]           = Task[A]
@@ -24,10 +27,17 @@ trait BaseSpec extends DefaultRunnableSpec {
       }
     }
 
+  implicit def emptyLogger: Logging[Task] =
+    zio
+      .Runtime
+      .default
+      .unsafeRun(
+        Logs.empty[Task, Task].byName("test")
+      )
+
   val fakeUuid: UUID   = UUID.randomUUID()
   val eventId: EventId = EventId(fakeUuid)
-  implicit def fakeUuidGen[F[_]: Applicative]: UUIDGen[F] = new UUIDGen[F] {
-    override def random: F[UUID]        = F.pure(fakeUuid)
-    override def newEventId: F[EventId] = F.pure(eventId)
+  implicit def fakeUuidGen[F[_]: Applicative]: GenUUID[F] = new GenUUID[F] {
+    override def randomUUID: F[UUID] = F.pure(fakeUuid)
   }
 }

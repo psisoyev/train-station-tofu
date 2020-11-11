@@ -12,6 +12,10 @@ object Dependencies {
   val zioTestSbt = "dev.zio" %% "zio-test-sbt" % Version.zio % Test
   val zioTest = List(zioTestCore, zioTestSbt)
 
+  val tofuCore = "ru.tinkoff" %% "tofu" % Version.tofu
+  val tofuLogging = "ru.tinkoff" %% "tofu-logging" % Version.tofu
+  val tofu = List(tofuCore, tofuLogging)
+
   val http4s = Seq(
     "org.http4s" %% "http4s-dsl" % Version.http4s,
     "org.http4s" %% "http4s-circe" % Version.http4s,
@@ -51,4 +55,5 @@ object Version {
   val newtype = "0.4.4"
   val neutron = "0.0.2+37-d92ef362-SNAPSHOT"
   val contextApplied = "0.1.3"
+  val tofu = "0.8.0"
 }
