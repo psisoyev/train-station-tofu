@@ -37,8 +37,8 @@ object Departures {
   }
 
   private class Logger[F[_]: FlatMap: Logging] extends Departures[Mid[F, *]] {
-    def register(departure: Departure): Mid[F, Departed] = { registation =>
-      F.info(s"Registering $departure") *> registation <* F.info(s"Train ${departure.id} successfully departed")
+    def register(departure: Departure): Mid[F, Departed] = { registration =>
+      F.info(s"Registering $departure") *> registration <* F.info(s"Train ${departure.id} successfully departed")
     }
   }
 
@@ -78,10 +78,10 @@ object Departures {
   ): Departures[F] = {
     val service = new Impl[F](city)
 
-    val logging: Departures[Mid[F, *]]    = new Logger[F]
-    val publishing: Departures[Mid[F, *]] = new Publisher[F](producer)
-    val validation: Departures[Mid[F, *]] = new Validator[F](connectedTo)
+    val logger: Departures[Mid[F, *]]    = new Logger[F]
+    val publisher: Departures[Mid[F, *]] = new Publisher[F](producer)
+    val validator: Departures[Mid[F, *]] = new Validator[F](connectedTo)
 
-    (logging |+| validation |+| publishing).attach(service)
+    (logger |+| validator |+| publisher).attach(service)
   }
 }
