@@ -4,7 +4,6 @@ import cats.effect.concurrent.Ref
 import cats.effect.{ Concurrent, ContextShift, Resource }
 import cats.implicits._
 import cats.{ Inject, Parallel }
-import com.psisoyev.train.station.Main.F
 import com.psisoyev.train.station.arrival.ExpectedTrains.ExpectedTrain
 import cr.pulsar.{ Consumer, Producer, Pulsar, Subscription, Topic, Config => PulsarConfig }
 import io.circe.Encoder
@@ -24,16 +23,22 @@ object Resources {
     E: Inject[*, Array[Byte]]: Encoder
   ]: Resource[F, Resources[F, E]] = {
     def topic(config: PulsarConfig, city: City) =
-      Topic(
-        Topic.Name(city.value.toLowerCase),
-        config
-      ).withType(Topic.Type.Persistent)
+      Topic
+        .Builder
+        .withName(Topic.Name(city.value.toLowerCase))
+        .withConfig(config)
+        .withType(Topic.Type.Persistent)
+        .build
 
     def consumer(client: Pulsar.T, config: Config, city: City)(implicit l: Logging[F]): Resource[F, Consumer[F, E]] = {
       val name = s"${city.value}-${config.city.value}"
       val subscription =
-        Subscription(Subscription.Name(name))
+        Subscription
+          .Builder
+          .withName(Subscription.Name(name))
           .withType(Subscription.Type.Failover)
+          .build
+
       val options =
         Consumer
           .Options[F, E]()
@@ -49,7 +54,7 @@ object Resources {
 
     for {
       config    <- Resource.liftF(Config.load[F])
-      client    <- Pulsar.create[F](config.pulsar.serviceUrl)
+      client    <- Pulsar.create[F](config.pulsar.url)
       global    <- Resource.liftF(logs.byName("global"))
       producer  <- producer(client, config)(global)
       consumers <- config.connectedTo.traverse(consumer(client, config, _)(global))
