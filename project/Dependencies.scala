@@ -8,28 +8,31 @@ object Dependencies {
   val cats = "org.typelevel" %% "cats-core" % Version.cats
   val catsEffect = "org.typelevel" %% "cats-effect" % Version.cats
 
-  val zioTestCore = "dev.zio" %% "zio-test"    % Version.zio % Test
-  val zioTestSbt = "dev.zio" %% "zio-test-sbt" % Version.zio % Test
-  val zioTest = List(zioTestCore, zioTestSbt)
+  val zioTest = List(
+    "dev.zio" %% "zio-test",
+    "dev.zio" %% "zio-test-sbt"
+  ).map(_ % Version.zio % Test)
 
-  val tofuCore = "ru.tinkoff" %% "tofu" % Version.tofu
-  val tofuLogging = "ru.tinkoff" %% "tofu-logging" % Version.tofu
-  val tofu = List(tofuCore, tofuLogging)
+  val tofu = List(
+    "ru.tinkoff" %% "tofu",
+    "ru.tinkoff" %% "tofu-logging"
+  ).map(_ % Version.tofu)
 
-  val http4s = Seq(
-    "org.http4s" %% "http4s-dsl" % Version.http4s,
-    "org.http4s" %% "http4s-circe" % Version.http4s,
-    "org.http4s" %% "http4s-blaze-server" % Version.http4s
-  )
+  val http4s = List(
+    "org.http4s" %% "http4s-dsl",
+    "org.http4s" %% "http4s-circe",
+    "org.http4s" %% "http4s-blaze-server"
+  ).map(_ % Version.http4s)
 
   val fs2Core = "co.fs2" %% "fs2-core" % Version.fs2Core
 
   val newtype = "io.estatico" %% "newtype" % Version.newtype
 
-  val circeGeneric = "io.circe" %% "circe-generic" % Version.circe
-  val circeCore = "io.circe" %% "circe-core" % Version.circe
-  val circeParser = "io.circe" %% "circe-parser" % Version.circe
-  val circe = List(circeGeneric, circeCore, circeParser)
+  val circe = List(
+  "io.circe" %% "circe-generic",
+  "io.circe" %% "circe-core",
+  "io.circe" %% "circe-parser"
+  ).map(_ % Version.circe)
 
   val slf4j = "org.slf4j" % "slf4j-simple" % Version.slf4j
 
@@ -53,7 +56,7 @@ object Version {
   val ciris = "1.2.0"
   val circe = "0.13.0"
   val newtype = "0.4.4"
-  val neutron = "0.0.2+37-d92ef362-SNAPSHOT"
+  val neutron = "0.0.3"
   val contextApplied = "0.1.3"
   val tofu = "0.8.0"
 }
