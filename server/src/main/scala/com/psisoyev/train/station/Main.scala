@@ -23,7 +23,7 @@ object Main extends zio.App {
       .make[F, Event]
       .use {
         case Resources(config, producer, consumers, trainRef, logger) =>
-          implicit val logging = logger
+          implicit val logging: Logging[F] = logger
 
           val expectedTrains   = ExpectedTrains.make[F](trainRef)
           val arrivalValidator = ArrivalValidator.make[F](expectedTrains)
@@ -52,7 +52,7 @@ object Main extends zio.App {
               .compile
               .drain
 
-          Logging[F].info(s"Started train station ${config.city}") *>
+          logging.info(s"Started train station ${config.city}") *>
             departureListener
               .zipPar(httpServer)
               .unit
