@@ -52,11 +52,11 @@ object Version {
   val slf4j = "1.7.28"
   val fs2Core = "2.4.2"
   val kindProjector = "0.11.0"
-  val http4s = "1.0.0-M4"
   val ciris = "1.2.1"
+  val http4s = "1.0.0-M6"
   val circe = "0.13.0"
   val newtype = "0.4.4"
   val neutron = "0.0.3"
-  val contextApplied = "0.1.3"
+  val contextApplied = "0.1.4"
   val tofu = "0.8.0"
 }
