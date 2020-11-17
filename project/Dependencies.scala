@@ -57,6 +57,6 @@ object Version {
   val circe = "0.13.0"
   val newtype = "0.4.4"
   val neutron = "0.0.3"
-  val contextApplied = "0.1.3"
+  val contextApplied = "0.1.4"
   val tofu = "0.8.0"
 }
