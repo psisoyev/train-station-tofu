@@ -35,8 +35,8 @@ trait BaseSpec extends DefaultRunnableSpec {
         Logs.empty[Task, Task].byName("test")
       )
 
-  val fakeUuid: UUID   = UUID.randomUUID()
-  val eventId: EventId = EventId(fakeUuid)
+  val fakeUuid: UUID                                      = UUID.randomUUID()
+  val eventId: EventId                                    = EventId(fakeUuid)
   implicit def fakeUuidGen[F[_]: Applicative]: GenUUID[F] = new GenUUID[F] {
     override def randomUUID: F[UUID] = F.pure(fakeUuid)
   }

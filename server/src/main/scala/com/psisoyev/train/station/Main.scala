@@ -21,41 +21,40 @@ object Main extends zio.App {
 
     Resources
       .make[F, Event]
-      .use {
-        case Resources(config, producer, consumers, trainRef, logger) =>
-          implicit val logging: Logging[F] = logger
+      .use { case Resources(config, producer, consumers, trainRef, logger) =>
+        implicit val logging: Logging[F] = logger
 
-          val expectedTrains   = ExpectedTrains.make[F](trainRef)
-          val arrivalValidator = ArrivalValidator.make[F](expectedTrains)
-          val arrivals         = Arrivals.make[F](config.city, producer, expectedTrains)
-          val departures       = Departures.make[F](config.city, config.connectedTo, producer)
-          val departureTracker = DepartureTracker.make[F](config.city, expectedTrains)
+        val expectedTrains   = ExpectedTrains.make[F](trainRef)
+        val arrivalValidator = ArrivalValidator.make[F](expectedTrains)
+        val arrivals         = Arrivals.make[F](config.city, producer, expectedTrains)
+        val departures       = Departures.make[F](config.city, config.connectedTo, producer)
+        val departureTracker = DepartureTracker.make[F](config.city, expectedTrains)
 
-          val routes = new StationRoutes[F](arrivals, arrivalValidator, departures).routes.orNotFound
+        val routes = new StationRoutes[F](arrivals, arrivalValidator, departures).routes.orNotFound
 
-          val httpServer = Task.concurrentEffectWith { implicit CE =>
-            BlazeServerBuilder[F](ec)
-              .bindHttp(config.httpPort.value, "0.0.0.0")
-              .withHttpApp(routes)
-              .serve
-              .compile
-              .drain
-          }
+        val httpServer = Task.concurrentEffectWith { implicit CE =>
+          BlazeServerBuilder[F](ec)
+            .bindHttp(config.httpPort.value, "0.0.0.0")
+            .withHttpApp(routes)
+            .serve
+            .compile
+            .drain
+        }
 
-          val departureListener =
-            Stream
-              .emits(consumers)
-              .map(_.autoSubscribe)
-              .parJoinUnbounded
-              .collect { case e: Departed => e }
-              .evalMap(departureTracker.save)
-              .compile
-              .drain
+        val departureListener =
+          Stream
+            .emits(consumers)
+            .map(_.autoSubscribe)
+            .parJoinUnbounded
+            .collect { case e: Departed => e }
+            .evalMap(departureTracker.save)
+            .compile
+            .drain
 
-          logging.info(s"Started train station ${config.city}") *>
-            departureListener
-              .zipPar(httpServer)
-              .unit
+        logging.info(s"Started train station ${config.city}") *>
+          departureListener
+            .zipPar(httpServer)
+            .unit
       }
       .exitCode
   }
