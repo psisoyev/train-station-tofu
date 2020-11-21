@@ -1,11 +1,11 @@
 import sbt._
 
 object Dependencies {
-  val zioCore = "dev.zio" %% "zio" % Version.zio
+  val zioCore = "dev.zio"  %% "zio"              % Version.zio
   val zioCats = ("dev.zio" %% "zio-interop-cats" % Version.zioCats).excludeAll(ExclusionRule("dev.zio"))
-  val zio = List(zioCore, zioCats)
+  val zio     = List(zioCore, zioCats)
 
-  val cats = "org.typelevel" %% "cats-core" % Version.cats
+  val cats       = "org.typelevel" %% "cats-core"   % Version.cats
   val catsEffect = "org.typelevel" %% "cats-effect" % Version.cats
 
   val zioTest = List(
@@ -13,12 +13,12 @@ object Dependencies {
     "dev.zio" %% "zio-test-sbt"
   ).map(_ % Version.zio % Test)
 
-  val tofu = List(
+  val tofu    = List(
     "ru.tinkoff" %% "tofu",
     "ru.tinkoff" %% "tofu-logging"
   ).map(_ % Version.tofu)
 
-  val http4s = List(
+  val http4s  = List(
     "org.http4s" %% "http4s-dsl",
     "org.http4s" %% "http4s-circe",
     "org.http4s" %% "http4s-blaze-server"
@@ -29,20 +29,20 @@ object Dependencies {
   val newtype = "io.estatico" %% "newtype" % Version.newtype
 
   val circe = List(
-  "io.circe" %% "circe-generic",
-  "io.circe" %% "circe-core",
-  "io.circe" %% "circe-parser"
+    "io.circe" %% "circe-generic",
+    "io.circe" %% "circe-core",
+    "io.circe" %% "circe-parser"
   ).map(_ % Version.circe)
 
   val slf4j = "org.slf4j" % "slf4j-simple" % Version.slf4j
 
-  val neutronCore = "com.chatroulette" %% "neutron-core" % Version.neutron
+  val neutronCore  = "com.chatroulette" %% "neutron-core"  % Version.neutron
   val neutronCirce = "com.chatroulette" %% "neutron-circe" % Version.neutron
 
   val ciris = "is.cir" %% "ciris" % Version.ciris
 
   val contextApplied = "org.augustjune" %% "context-applied" % Version.contextApplied
-  val kindProjector = "org.typelevel" %% "kind-projector" % Version.kindProjector cross CrossVersion.full
+  val kindProjector  = "org.typelevel"  %% "kind-projector"  % Version.kindProjector cross CrossVersion.full
 }
 
 object Version {

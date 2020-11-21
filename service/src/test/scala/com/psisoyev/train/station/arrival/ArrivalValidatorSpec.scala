@@ -21,10 +21,10 @@ object ArrivalValidatorSpec extends BaseSpec {
           val expectedTrains = Map(trainId -> ExpectedTrain(from, expected))
 
           for {
-            ref            <- Ref.of[F, ExpectedTrains](expectedTrains)
+            ref           <- Ref.of[F, ExpectedTrains](expectedTrains)
             expectedTrains = ExpectedTrains.make[F](ref)
             validator      = ArrivalValidator.make[F](expectedTrains)
-            result         <- validator.validate(Arrival(trainId, actual))
+            result        <- validator.validate(Arrival(trainId, actual))
           } yield {
             val validated = ValidatedArrival(trainId, actual, ExpectedTrain(from, expected))
             assert(result)(equalTo(validated))
@@ -34,13 +34,11 @@ object ArrivalValidatorSpec extends BaseSpec {
       testM("Reject unexpected train") {
         checkM(trainId, city, actual) { (trainId, city, actual) =>
           for {
-            ref            <- Ref.of[F, ExpectedTrains](Map.empty)
+            ref           <- Ref.of[F, ExpectedTrains](Map.empty)
             expectedTrains = ExpectedTrains.make[F](ref)
             validator      = ArrivalValidator.make[F](expectedTrains)
-            result         <- validator.validate(Arrival(trainId, actual)).flip
-          } yield {
-            assert(result)(equalTo(UnexpectedTrain(trainId)))
-          }
+            result        <- validator.validate(Arrival(trainId, actual)).flip
+          } yield assert(result)(equalTo(UnexpectedTrain(trainId)))
         }
       }
     )

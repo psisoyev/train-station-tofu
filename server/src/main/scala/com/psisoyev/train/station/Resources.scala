@@ -31,7 +31,7 @@ object Resources {
         .build
 
     def consumer(client: Pulsar.T, config: Config, city: City)(implicit l: Logging[F]): Resource[F, Consumer[F, E]] = {
-      val name = s"${city.value}-${config.city.value}"
+      val name         = s"${city.value}-${config.city.value}"
       val subscription =
         Subscription
           .Builder

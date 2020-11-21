@@ -15,25 +15,24 @@ object ArrivalsSpec extends BaseSpec {
   override def spec: ZSpec[TestEnvironment, Failure] =
     suite("ArrivalsSpec")(
       testM("Register expected train") {
-        checkM(trainId, from, city, expected, actual) {
-          (trainId, from, city, expected, actual) =>
-            val expectedTrain  = ExpectedTrain(from, expected)
-            val expectedTrains = Map(trainId -> expectedTrain)
+        checkM(trainId, from, city, expected, actual) { (trainId, from, city, expected, actual) =>
+          val expectedTrain  = ExpectedTrain(from, expected)
+          val expectedTrains = Map(trainId -> expectedTrain)
 
-            for {
-              ref                <- Ref.of[F, ExpectedTrains](expectedTrains)
-              expectedTrains     = ExpectedTrains.make[F](ref)
-              (events, producer) <- fakeProducer[F]
-              arrivals           = Arrivals.make[F](city, producer, expectedTrains)
-              result             <- arrivals.register(ValidatedArrival(trainId, actual, expectedTrain))
-              newEvents          <- events.get
-              expectedTrainsMap  <- ref.get
-            } yield {
-              val arrived = Arrived(eventId, trainId, from, To(city), expected, actual.toTimestamp)
-              assert(result)(equalTo(arrived)) &&
-              assert(List(result))(equalTo(newEvents)) &&
-              assert(expectedTrainsMap.isEmpty)(isTrue)
-            }
+          for {
+            ref                <- Ref.of[F, ExpectedTrains](expectedTrains)
+            expectedTrains      = ExpectedTrains.make[F](ref)
+            (events, producer) <- fakeProducer[F]
+            arrivals            = Arrivals.make[F](city, producer, expectedTrains)
+            result             <- arrivals.register(ValidatedArrival(trainId, actual, expectedTrain))
+            newEvents          <- events.get
+            expectedTrainsMap  <- ref.get
+          } yield {
+            val arrived = Arrived(eventId, trainId, from, To(city), expected, actual.toTimestamp)
+            assert(result)(equalTo(arrived)) &&
+            assert(List(result))(equalTo(newEvents)) &&
+            assert(expectedTrainsMap.isEmpty)(isTrue)
+          }
         }
       }
     )
