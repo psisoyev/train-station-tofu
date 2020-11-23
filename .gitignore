@@ -4,3 +4,6 @@ cache/
 out/
 .metals
 .bloop
+metals.sbt
+.bsp/
+.vscode/
