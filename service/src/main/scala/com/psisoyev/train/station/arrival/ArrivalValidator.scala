@@ -42,7 +42,7 @@ object ArrivalValidator {
         .flatMap { train =>
           train
             .map(ValidatedArrival(arrival.trainId, arrival.time, _))
-            .orRaise[F](UnexpectedTrain(arrival.trainId))
+            .orRaise(UnexpectedTrain(arrival.trainId))
         }
   }
 

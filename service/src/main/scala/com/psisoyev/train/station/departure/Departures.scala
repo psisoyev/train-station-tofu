@@ -1,5 +1,6 @@
 package com.psisoyev.train.station.departure
 
+import cats.effect.Sync
 import cats.{ Applicative, FlatMap, Monad }
 import com.psisoyev.train.station.Event.Departed
 import com.psisoyev.train.station._
@@ -10,13 +11,14 @@ import derevo.derive
 import derevo.tagless.applyK
 import io.circe.Decoder
 import io.circe.generic.semiauto.deriveDecoder
-import tofu.Raise
+import tofu.{ HasContext, Raise }
 import tofu.generate.GenUUID
 import tofu.higherKind.Mid
 import tofu.logging.Logging
 import tofu.syntax.monadic._
 import tofu.syntax.monoid.TofuSemigroupOps
 import tofu.syntax.raise._
+import Tracing.ops.TracingOps
 
 import scala.util.control.NoStackTrace
 
@@ -42,6 +44,10 @@ object Departures {
     }
   }
 
+  private class Tracer[F[_]: Tracing] extends Departures[Mid[F, *]] {
+    def register(departure: Departure): Mid[F, Departed] = _.traced("train departure: register")
+  }
+
   private class Publisher[F[_]: Monad](producer: Producer[F, Event]) extends Departures[Mid[F, *]] {
     def register(departure: Departure): Mid[F, Departed] =
       _.flatTap(producer.send_)
@@ -53,7 +59,7 @@ object Departures {
 
       connectedTo
         .find(_ == destination)
-        .orRaise[F](UnexpectedDestination(destination)) *> registration
+        .orRaise(UnexpectedDestination(destination)) *> registration
     }
   }
 
@@ -71,17 +77,18 @@ object Departures {
       }
   }
 
-  def make[F[_]: Monad: GenUUID: Logging: Raise[*[_], DepartureError]](
+  def make[F[_]: Monad: GenUUID: Logging: Raise[*[_], DepartureError]: Tracing](
     city: City,
     connectedTo: List[City],
     producer: Producer[F, Event]
   ): Departures[F] = {
     val service = new Impl[F](city)
 
+    val tracer: Departures[Mid[F, *]]    = new Tracer[F]
     val logger: Departures[Mid[F, *]]    = new Logger[F]
     val publisher: Departures[Mid[F, *]] = new Publisher[F](producer)
     val validator: Departures[Mid[F, *]] = new Validator[F](connectedTo)
 
-    (logger |+| validator |+| publisher).attach(service)
+    (logger |+| validator |+| publisher |+| tracer).attach(service)
   }
 }

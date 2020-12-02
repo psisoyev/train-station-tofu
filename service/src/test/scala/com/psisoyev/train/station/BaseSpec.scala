@@ -40,4 +40,7 @@ trait BaseSpec extends DefaultRunnableSpec {
   implicit def fakeUuidGen[F[_]: Applicative]: GenUUID[F] = new GenUUID[F] {
     override def randomUUID: F[UUID] = F.pure(fakeUuid)
   }
+  implicit def fakeTracing                                = new Tracing[F] {
+    override def traced[A](opName: String)(fa: F[A]): F[A] = fa
+  }
 }

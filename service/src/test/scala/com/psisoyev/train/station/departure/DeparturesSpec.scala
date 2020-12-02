@@ -9,6 +9,7 @@ import zio.interop.catz.implicits._
 import zio.test.Assertion._
 import zio.test.environment.TestEnvironment
 import zio.test._
+import com.psisoyev.train.station.Tracing._
 
 object DeparturesSpec extends BaseSpec {
   override def spec: ZSpec[TestEnvironment, Failure] =
