@@ -15,7 +15,8 @@ object Dependencies {
 
   val tofu    = List(
     "ru.tinkoff" %% "tofu",
-    "ru.tinkoff" %% "tofu-logging"
+    "ru.tinkoff" %% "tofu-logging",
+    "ru.tinkoff" %% "tofu-zio-core"
   ).map(_ % Version.tofu)
 
   val http4s  = List(
@@ -56,7 +57,7 @@ object Version {
   val http4s = "1.0.0-M7"
   val circe = "0.13.0"
   val newtype = "0.4.4"
-  val neutron = "0.0.3"
+  val neutron = "0.0.3+105-0c9056e0-SNAPSHOT"
   val contextApplied = "0.1.4"
   val tofu = "0.8.0"
 }
