@@ -32,20 +32,20 @@ services:
     depends_on:
       - pulsar
     ports:
-      - "8082:8082"
+      - "8083:8083"
     environment:
       - "PULSAR_SERVICE_URL=pulsar://pulsar:6650"
       - "CITY=Geneva"
-      - "HTTP_PORT=8082"
+      - "HTTP_PORT=8083"
       - "CONNECTED_TO=Bern"
 
   pulsar:
-    image: apachepulsar/pulsar:2.5.1
+    image: kafkaesqueio/pulsar:2.6.1_kesque_3_jdk11
     ports:
       - "8080:8080"
       - "6650:6650"
     environment:
-      - PULSAR_MEM=" -Xms512m -Xmx512m -XX:MaxDirectMemorySize=1g"
+      PULSAR_MEM: " -Xms512m -Xmx512m -XX:MaxDirectMemorySize=1g"
     command: >
       /bin/bash -c
       "bin/apply-config-from-env.py conf/standalone.conf
