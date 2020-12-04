@@ -39,7 +39,7 @@ object Main extends zio.App {
         .flatMap { case (config, consumers, departureTracker, routes) =>
           runApp[Init, Run](config, consumers, departureTracker, routes).tupled
         }
-        .provide(Ctx(Map.empty)) // TODO how to get rid of this?
+        .provide(Ctx(TraceId("???"))) // TODO how to get rid of this?
     }.exitCode
 
   def makeApp[

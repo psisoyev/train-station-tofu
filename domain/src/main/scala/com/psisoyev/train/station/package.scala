@@ -11,7 +11,8 @@ import io.estatico.newtype.macros.newtype
 import io.estatico.newtype.ops._
 
 package object station {
-  case class Ctx(data: Map[String, String])
+  @newtype case class TraceId(value: String)
+  case class Ctx(traceId: TraceId)
 
   @newtype case class Actual(value: Instant) {
     def toTimestamp: Timestamp = Timestamp(value)
