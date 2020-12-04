@@ -14,7 +14,7 @@ object Tracing      {
 
   def make[F[_]: FlatMap: Logging: WithCtx]: Tracing[F] = new Tracing[F] {
     def traced[A](opName: String)(fa: F[A]): F[A] =
-      askF[F]((ctx: Ctx) => F.info(s"[Tracing][traceId=${ctx}] $opName") *> fa) // TODO fix traceId
+      askF[F]((ctx: Ctx) => F.info(s"[Tracing][traceId=${ctx.traceId}] $opName") *> fa)
   }
 
   object ops {
