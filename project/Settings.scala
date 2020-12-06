@@ -32,8 +32,10 @@ object Settings {
       mainClass in Compile := Some("com.psisoyev.train.station.Main"),
       addCompilerPlugin(contextApplied),
       addCompilerPlugin(kindProjector),
+      addCompilerPlugin(betterMonadicFor),
       dockerBaseImage := "openjdk:jre-alpine",
-      dockerUpdateLatest := true
+      dockerUpdateLatest := true,
+
     )
 
   val serviceDependencies = List(cats, catsEffect, neutronCore, slf4j, zioCats) ++ zioTest ++ tofu

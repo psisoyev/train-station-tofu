@@ -44,6 +44,7 @@ object Dependencies {
 
   val contextApplied = "org.augustjune" %% "context-applied" % Version.contextApplied
   val kindProjector  = "org.typelevel"  %% "kind-projector"  % Version.kindProjector cross CrossVersion.full
+  val betterMonadicFor = "com.olegpy" %% "better-monadic-for" % Version.betterMonadicFor
 }
 
 object Version {
@@ -57,7 +58,8 @@ object Version {
   val http4s = "1.0.0-M8"
   val circe = "0.13.0"
   val newtype = "0.4.4"
-  val neutron = "0.0.3+105-0c9056e0-SNAPSHOT"
+  val neutron = "0.0.3+120-c508d875-SNAPSHOT"
   val contextApplied = "0.1.4"
   val tofu = "0.8.0"
+  val betterMonadicFor = "0.3.1"
 }
