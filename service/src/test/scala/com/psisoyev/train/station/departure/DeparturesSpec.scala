@@ -16,27 +16,22 @@ object DeparturesSpec extends BaseSpec {
     suite("DeparturesSpec")(
       testM("Fail to register departing train to an unexpected destination city") {
         checkM(trainId, to, city, expected, actual) { (trainId, to, city, expected, actual) =>
-          for {
-            (events, producer) <- fakeProducer[F]
-            departures          = Departures.make[F](city, List(), producer)
-            result             <- departures.register(Departure(trainId, to, expected, actual)).flip
-            newEvents          <- events.get
-          } yield assert(result)(equalTo(DepartureError.UnexpectedDestination(to.city))) &&
-            assert(newEvents.isEmpty)(isTrue)
+          Departures
+            .make[F](city, List())
+            .register(Departure(trainId, to, expected, actual))
+            .flip
+            .map(assert(_)(equalTo(DepartureError.UnexpectedDestination(to.city))))
         }
       },
       testM("Register departing train") {
         checkM(trainId, to, city, expected, actual) { (trainId, to, city, expected, actual) =>
-          for {
-            (events, producer) <- fakeProducer[F]
-            departures          = Departures.make[F](city, List(to.city), producer)
-            result             <- departures.register(Departure(trainId, to, expected, actual))
-            newEvents          <- events.get
-          } yield {
-            val departed = Departed(eventId, trainId, From(city), to, expected, actual.toTimestamp)
-            assert(result)(equalTo(departed)) &&
-            assert(List(result) == newEvents)(isTrue)
-          }
+          Departures
+            .make[F](city, List(to.city))
+            .register(Departure(trainId, to, expected, actual))
+            .map { result =>
+              val departed = Departed(eventId, trainId, From(city), to, expected, actual.toTimestamp)
+              assert(result)(equalTo(departed))
+            }
         }
       }
     )

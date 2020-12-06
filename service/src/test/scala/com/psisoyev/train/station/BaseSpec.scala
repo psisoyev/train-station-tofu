@@ -1,17 +1,17 @@
 package com.psisoyev.train.station
 
 import java.util.UUID
-
 import cats.Applicative
 import cats.implicits._
 import cats.effect.Sync
 import cats.effect.concurrent.Ref
 import com.psisoyev.train.station.arrival.ExpectedTrains.ExpectedTrain
-import cr.pulsar.Producer
+import cr.pulsar.{ MessageKey, Producer }
 import org.apache.pulsar.client.api.MessageId
 import tofu.generate.GenUUID
+import tofu.lift.Lift
 import tofu.logging.{ Logging, Logs }
-import zio.Task
+import zio.{ Task, UIO }
 import zio.test.DefaultRunnableSpec
 import zio.interop.catz._
 
@@ -22,8 +22,10 @@ trait BaseSpec extends DefaultRunnableSpec {
   def fakeProducer[F[_]: Sync]: F[(Ref[F, List[Event]], Producer[F, Event])] =
     Ref.of[F, List[Event]](List.empty).map { ref =>
       ref -> new Producer[F, Event] {
-        override def send(msg: Event): F[MessageId] = ref.update(_ :+ msg).as(MessageId.latest)
-        override def send_(msg: Event): F[Unit]     = send(msg).void
+        override def send(msg: Event): F[MessageId]                  = ref.update(_ :+ msg).as(MessageId.latest)
+        override def send_(msg: Event): F[Unit]                      = send(msg).void
+        override def send(msg: Event, key: MessageKey): F[MessageId] = ???
+        override def send_(msg: Event, key: MessageKey): F[Unit]     = ???
       }
     }
 
@@ -42,5 +44,9 @@ trait BaseSpec extends DefaultRunnableSpec {
   }
   implicit def fakeTracing                                = new Tracing[F] {
     override def traced[A](opName: String)(fa: F[A]): F[A] = fa
+  }
+  // TODO is this needed?
+  implicit val lift                                       = new Lift[UIO, Task] {
+    def lift[A](fa: UIO[A]): Task[A] = fa
   }
 }

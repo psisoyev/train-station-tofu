@@ -1,10 +1,11 @@
 package com.psisoyev.train.station.departure
 
 import cats.implicits._
-import cats.effect.concurrent.Ref
-import com.psisoyev.train.station.BaseSpec
+import com.psisoyev.train.station.{ BaseSpec, TrainId }
 import com.psisoyev.train.station.Generators._
 import com.psisoyev.train.station.arrival.ExpectedTrains
+import com.psisoyev.train.station.arrival.ExpectedTrains.ExpectedTrain
+import zio.Ref
 import zio.interop.catz._
 import zio.test.environment.TestEnvironment
 import zio.test.{ assert, checkM, suite, testM, ZSpec }
@@ -16,7 +17,7 @@ object DepartureTrackerSpec extends BaseSpec {
       testM("Expect trains departing to $city") {
         checkM(departedList, city) { (departed, city) =>
           for {
-            ref           <- Ref.of[F, ExpectedTrains](Map.empty)
+            ref           <- Ref.make(Map.empty[TrainId, ExpectedTrain])
             expectedTrains = ExpectedTrains.make[F](ref)
             tracker        = DepartureTracker.make[F](city, expectedTrains)
             _             <- departed.traverse(tracker.save)

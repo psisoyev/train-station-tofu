@@ -1,11 +1,11 @@
 package com.psisoyev.train.station.arrival
 
-import cats.effect.concurrent.Ref
 import com.psisoyev.train.station.Event.Arrived
 import com.psisoyev.train.station.Generators._
 import com.psisoyev.train.station.arrival.ArrivalValidator.ValidatedArrival
 import com.psisoyev.train.station.arrival.ExpectedTrains.ExpectedTrain
 import com.psisoyev.train.station.{ BaseSpec, To }
+import zio.Ref
 import zio.interop.catz._
 import zio.test.Assertion._
 import zio.test._
@@ -20,17 +20,15 @@ object ArrivalsSpec extends BaseSpec {
           val expectedTrains = Map(trainId -> expectedTrain)
 
           for {
-            ref                <- Ref.of[F, ExpectedTrains](expectedTrains)
-            expectedTrains      = ExpectedTrains.make[F](ref)
-            (events, producer) <- fakeProducer[F]
-            arrivals            = Arrivals.make[F](city, producer, expectedTrains)
-            result             <- arrivals.register(ValidatedArrival(trainId, actual, expectedTrain))
-            newEvents          <- events.get
-            expectedTrainsMap  <- ref.get
+            ref               <- Ref.make(expectedTrains)
+            expectedTrains     = ExpectedTrains.make[F](ref)
+            arrivals           = Arrivals.make[F](city, expectedTrains)
+            result            <- arrivals.register(ValidatedArrival(trainId, actual, expectedTrain))
+            expectedTrainsMap <- ref.get
           } yield {
             val arrived = Arrived(eventId, trainId, from, To(city), expected, actual.toTimestamp)
+
             assert(result)(equalTo(arrived)) &&
-            assert(List(result))(equalTo(newEvents)) &&
             assert(expectedTrainsMap.isEmpty)(isTrue)
           }
         }
