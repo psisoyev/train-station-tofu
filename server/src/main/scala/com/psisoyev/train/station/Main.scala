@@ -1,12 +1,13 @@
 package com.psisoyev.train.station
 
-import cats.Parallel
+import cats.Monad
 import cats.data.Kleisli
-import cats.effect.concurrent.Ref
-import cats.effect.{ Concurrent, ConcurrentEffect, ContextShift, Timer }
+import cats.effect.{ Concurrent, ConcurrentEffect, Sync, Timer }
 import com.psisoyev.train.station.Event.Departed
+import com.psisoyev.train.station.arrival.ArrivalValidator.ArrivalError
 import com.psisoyev.train.station.arrival.ExpectedTrains.ExpectedTrain
 import com.psisoyev.train.station.arrival.{ ArrivalValidator, Arrivals, ExpectedTrains }
+import com.psisoyev.train.station.departure.Departures.DepartureError
 import com.psisoyev.train.station.departure.{ DepartureTracker, Departures }
 import cr.pulsar.schema.circe.circeBytesInject
 import cr.pulsar.{ Consumer, Producer }
@@ -14,10 +15,11 @@ import fs2.Stream
 import org.http4s.implicits._
 import org.http4s.server.blaze.BlazeServerBuilder
 import org.http4s.{ Request, Response }
-import tofu.WithRun
+import tofu.generate.GenUUID
+import tofu.lift.Lift
 import tofu.logging.Logging
-import tofu.syntax.monadic._
 import tofu.zioInstances.implicits._
+import tofu.{ HasProvide, Raise, WithRun }
 import zio._
 import zio.interop.catz._
 import zio.interop.catz.implicits._
@@ -27,70 +29,68 @@ object Main extends zio.App {
   type Run[T]       = ZIO[Ctx, Throwable, T]
   type Routes[F[_]] = Kleisli[F, Request[F], Response[F]]
 
-  override def run(args: List[String]): ZIO[ZEnv, Nothing, ExitCode] =
+  // TODO is this needed?
+  implicit val lift = new Lift[UIO, Run] {
+    def lift[A](fa: UIO[A]): Run[A] = fa
+  }
+
+  override def run(args: List[String]): URIO[ZEnv, ExitCode] =
     Task.concurrentEffectWith { implicit CE =>
       Resources
         .make[Init, Run, Event]
         .use { case Resources(config, producer, consumers, logger) =>
-          Ref
-            .of[Run, Map[TrainId, ExpectedTrain]](Map.empty)
-            .map(makeApp[Init, Run](config, producer, consumers, logger, _))
+          implicit val logging: Logging[Run] = logger
+          implicit val tracing: Tracing[Run] = Tracing.make[Run]
+
+          for {
+            trainRef      <- Ref.make(Map.empty[TrainId, ExpectedTrain])
+            expectedTrains = ExpectedTrains.make[Run](trainRef)
+            tracker        = DepartureTracker.make[Run](config.city, expectedTrains)
+            routes         = makeRoutes[Init, Run](config, producer, expectedTrains)
+            _             <- startHttpServer(config, routes).zipPar(startDepartureTracker(consumers, tracker))
+          } yield ()
         }
-        .flatMap { case (config, consumers, departureTracker, routes) =>
-          runApp[Init, Run](config, consumers, departureTracker, routes).tupled
-        }
-        .provide(Ctx(TraceId("???"))) // TODO how to get rid of this?
     }.exitCode
 
-  def makeApp[
-    Init[_]: Concurrent: ContextShift,
-    Run[_]: Concurrent: ContextShift: Parallel: WithRun[*[_], Init, Ctx]
+  def makeRoutes[
+    Init[_]: Sync,
+    Run[_]: Monad: GenUUID: WithRun[*[_], Init, Ctx]: Logging: Tracing
   ](
     config: Config,
-    producer: Producer[Run, Event],
-    consumers: List[Consumer[Run, Event]],
-    logger: Logging[Run],
-    trainRef: Ref[Run, Map[TrainId, ExpectedTrain]]
-  ): (Config, List[Consumer[Run, Event]], DepartureTracker[Run], Routes[Init]) = {
-    implicit val logging: Logging[Run] = logger
-    implicit val tracing: Tracing[Run] = Tracing.make[Run]
-
-    val expectedTrains   = ExpectedTrains.make[Run](trainRef)
+    producer: Producer[Init, Event],
+    expectedTrains: ExpectedTrains[Run]
+  )(implicit
+    A: Raise[Run, ArrivalError],
+    D: Raise[Run, DepartureError]
+  ): Routes[Init] = {
     val arrivalValidator = ArrivalValidator.make[Run](expectedTrains)
-    val arrivals         = Arrivals.make[Run](config.city, producer, expectedTrains)
-    val departures       = Departures.make[Run](config.city, config.connectedTo, producer)
-    val departureTracker = DepartureTracker.make[Run](config.city, expectedTrains)
+    val arrivals         = Arrivals.make[Run](config.city, expectedTrains)
+    val departures       = Departures.make[Run](config.city, config.connectedTo)
 
-    val routes = new StationRoutes[Init, Run](arrivals, arrivalValidator, departures).routes.orNotFound
-
-    (config, consumers, departureTracker, routes)
+    new StationRoutes[Init, Run](arrivals, arrivalValidator, producer, departures).routes.orNotFound
   }
 
-  def runApp[Init[_]: ConcurrentEffect: Timer, Run[_]: Concurrent](
+  def startHttpServer[Init[_]: ConcurrentEffect: Timer](
     config: Config,
-    consumers: List[Consumer[Run, Event]],
-    departureTracker: DepartureTracker[Run],
     routes: Routes[Init]
-  ): (Run[Unit], Init[Unit]) = {
-    val httpServer: Init[Unit] =
-      BlazeServerBuilder[Init](platform.executor.asEC)
-        .bindHttp(config.httpPort.value, "0.0.0.0")
-        .withHttpApp(routes)
-        .serve
-        .compile
-        .drain
+  ): Init[Unit] =
+    BlazeServerBuilder[Init](platform.executor.asEC)
+      .bindHttp(config.httpPort.value, "0.0.0.0")
+      .withHttpApp(routes)
+      .serve
+      .compile
+      .drain
 
-    val departureListener: Run[Unit] =
-      Stream
-        .emits(consumers)
-        .map(_.autoSubscribe)
-        .parJoinUnbounded
-        .collect { case e: Departed => e }
-        .evalMap(departureTracker.save)
-        .compile
-        .drain
-
-    (departureListener, httpServer)
-  }
-
+  def startDepartureTracker[Init[_]: Concurrent: GenUUID, Run[_]: HasProvide[*[_], Init, Ctx]](
+    consumers: List[Consumer[Init, Event]],
+    departureTracker: DepartureTracker[Run]
+  ): Init[Unit] =
+    Stream
+      .emits(consumers)
+      .map(_.autoSubscribe)
+      .parJoinUnbounded
+      .collect { case e: Departed => e }
+      .evalMap(e => Tracing.withNewTrace(departureTracker.save(e)))
+      .compile
+      .drain
 }
