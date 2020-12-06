@@ -1,9 +1,10 @@
 package com.psisoyev.train.station
 
 import cats.FlatMap
-import tofu.HasLocal
+import tofu.{ HasLocal, HasProvide }
+import tofu.generate.GenUUID
 import tofu.logging.Logging
-import tofu.syntax.context.askF
+import tofu.syntax.context.{ askF, runContext }
 import tofu.syntax.monadic._
 
 trait Tracing[F[_]] {
@@ -22,4 +23,9 @@ object Tracing      {
       def traced(opName: String)(implicit F: Tracing[F]): F[A] = F.traced(opName)(fa)
     }
   }
+
+  def withNewTrace[I[_]: GenUUID: FlatMap, F[_]: HasProvide[*[_], I, Ctx], T](action: F[T]): I[T] =
+    I.randomUUID.map(id => TraceId(id.toString)).flatMap { traceId =>
+      runContext(action)(Ctx(traceId))
+    }
 }
