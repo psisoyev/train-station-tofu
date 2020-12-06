@@ -2,9 +2,10 @@ package com.psisoyev.train.station.departure
 
 import cats.{ Applicative, FlatMap, Monad }
 import com.psisoyev.train.station.Event.Departed
+import com.psisoyev.train.station.Tracing.ops.TracingOps
 import com.psisoyev.train.station._
-import com.psisoyev.train.station.departure.Departures.DepartureError.UnexpectedDestination
 import com.psisoyev.train.station.departure.Departures.Departure
+import com.psisoyev.train.station.departure.Departures.DepartureError.UnexpectedDestination
 import derevo.derive
 import derevo.tagless.applyK
 import io.circe.Decoder
@@ -16,7 +17,6 @@ import tofu.logging.Logging
 import tofu.syntax.monadic._
 import tofu.syntax.monoid.TofuSemigroupOps
 import tofu.syntax.raise._
-import Tracing.ops.TracingOps
 
 import scala.util.control.NoStackTrace
 

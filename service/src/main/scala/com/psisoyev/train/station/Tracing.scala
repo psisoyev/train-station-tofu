@@ -1,11 +1,11 @@
 package com.psisoyev.train.station
 
 import cats.FlatMap
-import tofu.{ HasLocal, HasProvide }
 import tofu.generate.GenUUID
 import tofu.logging.Logging
 import tofu.syntax.context.{ askF, runContext }
 import tofu.syntax.monadic._
+import tofu.{ HasLocal, HasProvide }
 
 trait Tracing[F[_]] {
   def traced[A](opName: String)(fa: F[A]): F[A]

@@ -1,11 +1,11 @@
 package com.psisoyev.train.station.arrival
 
 import cats.{ FlatMap, Monad }
-import com.psisoyev.train.station.{ Actual, TrainId }
-import com.psisoyev.train.station.arrival.Arrivals.{ Arrival, Logger }
 import com.psisoyev.train.station.arrival.ArrivalValidator.ArrivalError.UnexpectedTrain
 import com.psisoyev.train.station.arrival.ArrivalValidator.ValidatedArrival
+import com.psisoyev.train.station.arrival.Arrivals.Arrival
 import com.psisoyev.train.station.arrival.ExpectedTrains.ExpectedTrain
+import com.psisoyev.train.station.{ Actual, TrainId }
 import derevo.derive
 import derevo.tagless.applyK
 import tofu.Raise

@@ -1,15 +1,13 @@
 package com.psisoyev.train.station.departure
 
 import com.psisoyev.train.station.Event.Departed
-import com.psisoyev.train.station.{ BaseSpec, From }
-import com.psisoyev.train.station.Generators.{ actual, city, expected, to, trainId }
+import com.psisoyev.train.station.Generators._
 import com.psisoyev.train.station.departure.Departures.{ Departure, DepartureError }
+import com.psisoyev.train.station.{ BaseSpec, From }
 import zio.interop.catz._
-import zio.interop.catz.implicits._
 import zio.test.Assertion._
-import zio.test.environment.TestEnvironment
 import zio.test._
-import com.psisoyev.train.station.Tracing._
+import zio.test.environment.TestEnvironment
 
 object DeparturesSpec extends BaseSpec {
   override def spec: ZSpec[TestEnvironment, Failure] =

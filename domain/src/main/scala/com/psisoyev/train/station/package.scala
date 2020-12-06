@@ -1,14 +1,14 @@
 package com.psisoyev.train
 
-import java.time.Instant
-import java.util.UUID
-
 import cats.Eq
 import cats.implicits._
 import io.circe.{ Decoder, Encoder }
 import io.estatico.newtype.Coercible
 import io.estatico.newtype.macros.newtype
 import io.estatico.newtype.ops._
+
+import java.time.Instant
+import java.util.UUID
 
 package object station {
   @newtype case class TraceId(value: String)

@@ -1,7 +1,7 @@
 import Dependencies._
 import com.typesafe.sbt.packager.Keys._
 import org.scalafmt.sbt.ScalafmtPlugin.autoImport.scalafmtOnCompile
-import sbt.Keys.{ scalacOptions, _ }
+import sbt.Keys.{scalacOptions, _}
 import sbt._
 
 object Settings {

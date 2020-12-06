@@ -12,7 +12,6 @@ import tofu.generate.GenUUID
 import tofu.higherKind.Mid
 import tofu.logging.Logging
 import tofu.syntax.monadic._
-import tofu.syntax.raise._
 import tofu.syntax.monoid.TofuSemigroupOps
 
 @derive(applyK)

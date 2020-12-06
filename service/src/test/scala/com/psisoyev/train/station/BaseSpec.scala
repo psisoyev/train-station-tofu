@@ -1,19 +1,20 @@
 package com.psisoyev.train.station
 
-import java.util.UUID
 import cats.Applicative
-import cats.implicits._
 import cats.effect.Sync
 import cats.effect.concurrent.Ref
+import cats.implicits._
 import com.psisoyev.train.station.arrival.ExpectedTrains.ExpectedTrain
 import cr.pulsar.{ MessageKey, Producer }
 import org.apache.pulsar.client.api.MessageId
 import tofu.generate.GenUUID
 import tofu.lift.Lift
 import tofu.logging.{ Logging, Logs }
-import zio.{ Task, UIO }
-import zio.test.DefaultRunnableSpec
 import zio.interop.catz._
+import zio.test.DefaultRunnableSpec
+import zio.{ Task, UIO }
+
+import java.util.UUID
 
 trait BaseSpec extends DefaultRunnableSpec {
   type F[A]           = Task[A]
