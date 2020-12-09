@@ -1,5 +1,5 @@
 import sbt._
-import _root_.Settings._
+import Settings._
 
 lazy val domain = project
   .settings(commonSettings)
