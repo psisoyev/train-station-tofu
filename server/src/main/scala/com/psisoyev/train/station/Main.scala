@@ -2,6 +2,7 @@ package com.psisoyev.train.station
 
 import cats.Monad
 import cats.data.Kleisli
+import cats.effect.concurrent.Ref
 import cats.effect.{ Concurrent, ConcurrentEffect, Sync, Timer }
 import com.psisoyev.train.station.Event.Departed
 import com.psisoyev.train.station.arrival.ArrivalValidator.ArrivalError
@@ -16,11 +17,10 @@ import org.http4s.implicits._
 import org.http4s.server.blaze.BlazeServerBuilder
 import org.http4s.{ Request, Response }
 import tofu.generate.GenUUID
-import tofu.lift.Lift
 import tofu.logging.Logging
 import tofu.zioInstances.implicits._
 import tofu.{ HasProvide, Raise, WithRun }
-import zio._
+import zio.{ Ref => _, _ }
 import zio.interop.catz._
 import zio.interop.catz.implicits._
 
@@ -28,11 +28,6 @@ object Main extends zio.App {
   type Init[T]      = Task[T]
   type Run[T]       = ZIO[Ctx, Throwable, T]
   type Routes[F[_]] = Kleisli[F, Request[F], Response[F]]
-
-  // TODO is this needed?
-  implicit val lift = new Lift[UIO, Run] {
-    def lift[A](fa: UIO[A]): Run[A] = fa
-  }
 
   override def run(args: List[String]): URIO[ZEnv, ExitCode] =
     Task.concurrentEffectWith { implicit CE =>
@@ -43,7 +38,7 @@ object Main extends zio.App {
           implicit val tracing: Tracing[Run] = Tracing.make[Run]
 
           for {
-            trainRef      <- Ref.make(Map.empty[TrainId, ExpectedTrain])
+            trainRef      <- Ref.in[Init, Run, Map[TrainId, ExpectedTrain]](Map.empty)
             expectedTrains = ExpectedTrains.make[Run](trainRef)
             tracker        = DepartureTracker.make[Run](config.city, expectedTrains)
             routes         = makeRoutes[Init, Run](config, producer, expectedTrains)

@@ -1,12 +1,12 @@
 package com.psisoyev.train.station.arrival
 
+import cats.effect.concurrent.Ref
 import com.psisoyev.train.station.Generators._
 import com.psisoyev.train.station.arrival.ArrivalValidator.ArrivalError.UnexpectedTrain
 import com.psisoyev.train.station.arrival.ArrivalValidator.ValidatedArrival
 import com.psisoyev.train.station.arrival.Arrivals.Arrival
 import com.psisoyev.train.station.arrival.ExpectedTrains.ExpectedTrain
 import com.psisoyev.train.station.{ BaseSpec, TrainId }
-import zio.Ref
 import zio.interop.catz._
 import zio.test.Assertion._
 import zio.test._
@@ -20,7 +20,7 @@ object ArrivalValidatorSpec extends BaseSpec {
           val expectedTrains = Map(trainId -> ExpectedTrain(from, expected))
 
           for {
-            ref           <- Ref.make(expectedTrains)
+            ref           <- Ref.of[F, Map[TrainId, ExpectedTrain]](expectedTrains)
             expectedTrains = ExpectedTrains.make[F](ref)
             validator      = ArrivalValidator.make[F](expectedTrains)
             result        <- validator.validate(Arrival(trainId, actual))
@@ -33,7 +33,7 @@ object ArrivalValidatorSpec extends BaseSpec {
       testM("Reject unexpected train") {
         checkM(trainId, actual) { (trainId, actual) =>
           for {
-            ref           <- Ref.make(Map.empty[TrainId, ExpectedTrain])
+            ref           <- Ref.of[F, Map[TrainId, ExpectedTrain]](Map.empty)
             expectedTrains = ExpectedTrains.make[F](ref)
             validator      = ArrivalValidator.make[F](expectedTrains)
             result        <- validator.validate(Arrival(trainId, actual)).flip
