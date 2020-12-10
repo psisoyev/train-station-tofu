@@ -11,9 +11,6 @@ import java.time.Instant
 import java.util.UUID
 
 package object station {
-  @newtype case class TraceId(value: String)
-  case class Ctx(traceId: TraceId)
-
   @newtype case class Actual(value: Instant) {
     def toTimestamp: Timestamp = Timestamp(value)
   }

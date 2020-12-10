@@ -11,11 +11,11 @@ trait Tracing[F[_]] {
   def traced[A](opName: String)(fa: F[A]): F[A]
 }
 object Tracing      {
-  type WithCtx[F[_]] = HasLocal[F, Ctx]
+  type WithCtx[F[_]] = HasLocal[F, Context]
 
   def make[F[_]: FlatMap: Logging: WithCtx]: Tracing[F] = new Tracing[F] {
     def traced[A](opName: String)(fa: F[A]): F[A] =
-      askF[F]((ctx: Ctx) => F.info(s"[Tracing][traceId=${ctx.traceId}] $opName") *> fa)
+      askF[F]((ctx: Context) => F.info(s"[Tracing][traceId=${ctx.traceId}] $opName") *> fa)
   }
 
   object ops {
@@ -23,9 +23,4 @@ object Tracing      {
       def traced(opName: String)(implicit F: Tracing[F]): F[A] = F.traced(opName)(fa)
     }
   }
-
-  def withNewTrace[I[_]: GenUUID: FlatMap, F[_]: HasProvide[*[_], I, Ctx], T](action: F[T]): I[T] =
-    I.randomUUID.map(id => TraceId(id.toString)).flatMap { traceId =>
-      runContext(action)(Ctx(traceId))
-    }
 }

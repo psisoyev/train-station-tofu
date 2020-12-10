@@ -26,7 +26,7 @@ import zio.interop.catz.implicits._
 
 object Main extends zio.App {
   type Init[T]      = Task[T]
-  type Run[T]       = ZIO[Ctx, Throwable, T]
+  type Run[T]       = ZIO[Context, Throwable, T]
   type Routes[F[_]] = Kleisli[F, Request[F], Response[F]]
 
   override def run(args: List[String]): URIO[ZEnv, ExitCode] =
@@ -49,7 +49,7 @@ object Main extends zio.App {
 
   def makeRoutes[
     Init[_]: Sync,
-    Run[_]: Monad: GenUUID: WithRun[*[_], Init, Ctx]: Logging: Tracing
+    Run[_]: Monad: GenUUID: WithRun[*[_], Init, Context]: Logging: Tracing
   ](
     config: Config,
     producer: Producer[Init, Event],
@@ -76,7 +76,7 @@ object Main extends zio.App {
       .compile
       .drain
 
-  def startDepartureTracker[Init[_]: Concurrent: GenUUID, Run[_]: HasProvide[*[_], Init, Ctx]](
+  def startDepartureTracker[Init[_]: Concurrent: GenUUID, Run[_]: HasProvide[*[_], Init, Context]](
     consumers: List[Consumer[Init, Event]],
     departureTracker: DepartureTracker[Run]
   ): Init[Unit] =
@@ -85,7 +85,7 @@ object Main extends zio.App {
       .map(_.autoSubscribe)
       .parJoinUnbounded
       .collect { case e: Departed => e }
-      .evalMap(e => Tracing.withNewTrace(departureTracker.save(e)))
+      .evalMap(e => Context.withSystemContext(departureTracker.save(e)))
       .compile
       .drain
 }
