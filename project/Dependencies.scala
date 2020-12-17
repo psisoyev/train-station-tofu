@@ -60,6 +60,6 @@ object Version {
   val newtype = "0.4.4"
   val neutron = "0.0.3+120-c508d875-SNAPSHOT"
   val contextApplied = "0.1.4"
-  val tofu = "0.8.0"
+  val tofu = "0.9.0"
   val betterMonadicFor = "0.3.1"
 }
