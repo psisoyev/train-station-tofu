@@ -5,6 +5,8 @@ import cats.implicits._
 import cats.{ Inject, Parallel }
 import cr.pulsar.{ Consumer, Producer, Pulsar, Subscription, Topic, Config => PulsarConfig }
 import io.circe.Encoder
+import Context.loggableContext
+import tofu.HasContext
 import tofu.logging.{ Logging, Logs }
 
 final case class Resources[I[_], F[_], E](
@@ -17,7 +19,7 @@ final case class Resources[I[_], F[_], E](
 object Resources {
   def make[
     I[_]: Concurrent: ContextShift: Parallel,
-    F[_]: Sync,
+    F[_]: Sync: *[_] HasContext Context,
     E: Inject[*, Array[Byte]]: Encoder
   ]: Resource[I, Resources[I, F, E]] = {
     def topic(config: PulsarConfig, city: City) =
@@ -37,18 +39,18 @@ object Resources {
           .withType(Subscription.Type.Failover)
           .build
 
-      Consumer.withLogger[I, E](client, topic(config.pulsar, city), subscription, EventLogger.incomingEvents)
+      Consumer.withLogger[I, E](client, topic(config.pulsar, city), subscription, EventLogger.logEvents)
     }
 
     def producer(client: Pulsar.T, config: Config)(implicit L: Logging[I]): Resource[I, Producer[I, E]] =
-      Producer.withLogger[I, E](client, topic(config.pulsar, config.city), EventLogger.outgoingEvents)
+      Producer.withLogger[I, E](client, topic(config.pulsar, config.city), EventLogger.logEvents)
 
     for {
       config         <- Resource.liftF(Config.load[I])
       client         <- Pulsar.create[I](config.pulsar.url)
-      consumerLogger <- Resource.liftF(Logs.sync[I, I].byName("consumer"))
-      producerLogger <- Resource.liftF(Logs.sync[I, I].byName("producer"))
-      global         <- Resource.liftF(Logs.sync[I, F].byName("global"))
+      consumerLogger <- Resource.liftF(Logs.sync[I, I].byName("<<<"))
+      producerLogger <- Resource.liftF(Logs.sync[I, I].byName(">>>"))
+      global         <- Resource.liftF(Logs.withContext[I, F].byName("global"))
       producer       <- producer(client, config)(producerLogger)
       consumers      <- config.connectedTo.traverse(consumer(client, config, _)(consumerLogger))
     } yield Resources[I, F, E](config, producer, consumers, global)

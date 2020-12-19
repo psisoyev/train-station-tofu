@@ -37,7 +37,7 @@ object Departures {
     implicit val departureDecoder: Decoder[Departure] = deriveDecoder
   }
 
-  private class Logger[F[_]: FlatMap: Logging: WithCtx] extends Departures[Mid[F, *]] {
+  private class Logger[F[_]: FlatMap: Logging] extends Departures[Mid[F, *]] {
     def register(departure: Departure): Mid[F, Departed] = { registration =>
       F.info(s"Registering $departure") *> registration <* F.info(s"Train ${departure.id} successfully departed")
     }
@@ -71,7 +71,7 @@ object Departures {
       }
   }
 
-  def make[F[_]: Monad: GenUUID: Logging: Raise[*[_], DepartureError]: Tracing: WithCtx](
+  def make[F[_]: Monad: GenUUID: Logging: Raise[*[_], DepartureError]: Tracing](
     city: City,
     connectedTo: List[City]
   ): Departures[F] = {
