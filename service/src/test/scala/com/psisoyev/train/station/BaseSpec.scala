@@ -8,11 +8,10 @@ import com.psisoyev.train.station.arrival.ExpectedTrains.ExpectedTrain
 import cr.pulsar.{ MessageKey, Producer }
 import org.apache.pulsar.client.api.MessageId
 import tofu.generate.GenUUID
-import tofu.lift.Lift
 import tofu.logging.{ Logging, Logs }
 import zio.interop.catz._
 import zio.test.DefaultRunnableSpec
-import zio.{ Task, UIO }
+import zio.Task
 
 import java.util.UUID
 
@@ -45,9 +44,5 @@ trait BaseSpec extends DefaultRunnableSpec {
   }
   implicit def fakeTracing                                = new Tracing[F] {
     override def traced[A](opName: String)(fa: F[A]): F[A] = fa
-  }
-  // TODO is this needed?
-  implicit val lift                                       = new Lift[UIO, Task] {
-    def lift[A](fa: UIO[A]): Task[A] = fa
   }
 }

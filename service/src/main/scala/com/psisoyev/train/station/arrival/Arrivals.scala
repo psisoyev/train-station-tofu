@@ -1,7 +1,6 @@
 package com.psisoyev.train.station.arrival
 
 import cats.{ Applicative, FlatMap, Monad }
-import com.psisoyev.train.station.Context._
 import com.psisoyev.train.station.Event.Arrived
 import com.psisoyev.train.station.arrival.ArrivalValidator.ValidatedArrival
 import com.psisoyev.train.station.{ Actual, City, EventId, To, TrainId }
@@ -12,10 +11,8 @@ import io.circe.generic.semiauto._
 import tofu.generate.GenUUID
 import tofu.higherKind.Mid
 import tofu.logging.Logging
-import tofu.syntax.context.askF
 import tofu.syntax.monadic._
 import tofu.syntax.monoid.TofuSemigroupOps
-import com.psisoyev.train.station.Context
 
 @derive(applyK)
 trait Arrivals[F[_]] {
@@ -28,11 +25,12 @@ object Arrivals {
     implicit val arrivalDecoder: Decoder[Arrival] = deriveDecoder
   }
 
-  private class Logger[F[_]: FlatMap: Logging: WithCtx] extends Arrivals[Mid[F, *]] {
+  private class Logger[F[_]: FlatMap: Logging] extends Arrivals[Mid[F, *]] {
     def register(arrival: ValidatedArrival): Mid[F, Arrived] = { registration =>
-      askF[F] { ctx: Context =>
-        F.info(s"[${ctx.userId}] Registering $arrival") *> registration <* F.info(s"Train ${arrival.trainId} successfully arrived")
-      }
+      val before = F.info(s"Registering $arrival")
+      val after  = F.info(s"Train ${arrival.trainId} successfully arrived")
+
+      before *> registration <* after
     }
   }
 
@@ -55,7 +53,7 @@ object Arrivals {
       }
   }
 
-  def make[F[_]: Monad: GenUUID: Logging: WithCtx](
+  def make[F[_]: Monad: GenUUID: Logging](
     city: City,
     expectedTrains: ExpectedTrains[F]
   ): Arrivals[F] = {
