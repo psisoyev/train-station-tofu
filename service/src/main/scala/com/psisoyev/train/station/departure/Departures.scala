@@ -3,6 +3,7 @@ package com.psisoyev.train.station.departure
 import cats.{ Applicative, FlatMap, Monad }
 import com.psisoyev.train.station.Event.Departed
 import com.psisoyev.train.station.Tracing.ops.TracingOps
+import com.psisoyev.train.station.Context._
 import com.psisoyev.train.station._
 import com.psisoyev.train.station.departure.Departures.Departure
 import com.psisoyev.train.station.departure.Departures.DepartureError.UnexpectedDestination
@@ -36,7 +37,7 @@ object Departures {
     implicit val departureDecoder: Decoder[Departure] = deriveDecoder
   }
 
-  private class Logger[F[_]: FlatMap: Logging] extends Departures[Mid[F, *]] {
+  private class Logger[F[_]: FlatMap: Logging: WithCtx] extends Departures[Mid[F, *]] {
     def register(departure: Departure): Mid[F, Departed] = { registration =>
       F.info(s"Registering $departure") *> registration <* F.info(s"Train ${departure.id} successfully departed")
     }
@@ -70,7 +71,7 @@ object Departures {
       }
   }
 
-  def make[F[_]: Monad: GenUUID: Logging: Raise[*[_], DepartureError]: Tracing](
+  def make[F[_]: Monad: GenUUID: Logging: Raise[*[_], DepartureError]: Tracing: WithCtx](
     city: City,
     connectedTo: List[City]
   ): Departures[F] = {
