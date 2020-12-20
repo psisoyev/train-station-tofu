@@ -34,11 +34,12 @@ object Settings {
       addCompilerPlugin(kindProjector),
       addCompilerPlugin(betterMonadicFor),
       dockerBaseImage := "openjdk:jre-alpine",
-      dockerUpdateLatest := true
+      dockerUpdateLatest := true,
+      javaOptions += "-Dlogback.configurationFile=/src/resources/logback.xml"
     )
 
-  val serviceDependencies = List(cats, catsEffect, neutronCore, slf4j, zioCats) ++ zioTest ++ tofu
-  val routeDependencies   = http4s
-  val serverDependencies  = List(neutronCirce, ciris, logback) ++ zio
-  val domainDependencies  = List(newtype) ++ circe
+  val serviceDependencies = List(cats, catsEffect, neutronCore, zioCats) ++ zioTest ++ tofu
+  val routeDependencies = http4s
+  val serverDependencies = List(neutronCirce, ciris, logback, log4cats) ++ zio
+  val domainDependencies = List(newtype) ++ circe
 }

@@ -1,14 +1,14 @@
 package com.psisoyev.train.station
 
-import cats.{ FlatMap, Show }
 import cats.implicits._
+import cats.{ FlatMap, Show }
 import com.psisoyev.train.station.Context.{ TraceId, UserId }
 import io.estatico.newtype.macros.newtype
-import tofu.{ HasContext, HasLocal, HasProvide }
 import tofu.generate.GenUUID
-import tofu.syntax.context.runContext
-import tofu.logging.{ Loggable, LoggableContext }
 import tofu.logging.derivation.loggable
+import tofu.logging.{ Loggable, LoggableContext }
+import tofu.syntax.context.runContext
+import tofu.{ HasContext, HasLocal, HasProvide }
 
 case class Context(traceId: TraceId, userId: UserId)
 
@@ -18,8 +18,9 @@ object Context {
   @newtype case class TraceId(value: String)
   @newtype case class UserId(value: String)
 
-  implicit val ContextShow: Show[Context]                                         = Show.show(ctx => s"[${ctx.userId.value}]")
-  implicit val ContextLoggable: Loggable[Context]                                 = loggable.byShow("context")
+  implicit val ContextShow: Show[Context]         = Show.show(ctx => s"${ctx.userId.value}")
+  implicit val ContextLoggable: Loggable[Context] = loggable.byShow("userId")
+
   implicit def loggableContext[F[_]: *[_] HasContext Context]: LoggableContext[F] =
     LoggableContext.of[F].instance
 

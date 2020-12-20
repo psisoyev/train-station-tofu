@@ -1,11 +1,11 @@
 import sbt._
 
 object Dependencies {
-  val zioCore = "dev.zio"  %% "zio"              % Version.zio
+  val zioCore = "dev.zio" %% "zio" % Version.zio
   val zioCats = ("dev.zio" %% "zio-interop-cats" % Version.zioCats).excludeAll(ExclusionRule("dev.zio"))
-  val zio     = List(zioCore, zioCats)
+  val zio = List(zioCore, zioCats)
 
-  val cats       = "org.typelevel" %% "cats-core"   % Version.cats
+  val cats = "org.typelevel" %% "cats-core" % Version.cats
   val catsEffect = "org.typelevel" %% "cats-effect" % Version.cats
 
   val zioTest = List(
@@ -13,7 +13,7 @@ object Dependencies {
     "dev.zio" %% "zio-test-sbt"
   ).map(_ % Version.zio % Test)
 
-  val tofu    = List(
+  val tofu = List(
     "ru.tinkoff" %% "tofu",
     "ru.tinkoff" %% "tofu-logging",
     "ru.tinkoff" %% "tofu-logging-log4cats",
@@ -22,7 +22,7 @@ object Dependencies {
     "ru.tinkoff" %% "tofu-zio-logging"
   ).map(_ % Version.tofu)
 
-  val http4s  = List(
+  val http4s = List(
     "org.http4s" %% "http4s-dsl",
     "org.http4s" %% "http4s-circe",
     "org.http4s" %% "http4s-blaze-server"
@@ -38,25 +38,23 @@ object Dependencies {
     "io.circe" %% "circe-parser"
   ).map(_ % Version.circe)
 
-  val slf4j = "org.slf4j" % "slf4j-simple" % Version.slf4j
-
-  val neutronCore  = "com.chatroulette" %% "neutron-core"  % Version.neutron
+  val neutronCore = "com.chatroulette" %% "neutron-core" % Version.neutron
   val neutronCirce = "com.chatroulette" %% "neutron-circe" % Version.neutron
 
   val ciris = "is.cir" %% "ciris" % Version.ciris
 
   val contextApplied = "org.augustjune" %% "context-applied" % Version.contextApplied
-  val kindProjector  = "org.typelevel"  %% "kind-projector"  % Version.kindProjector cross CrossVersion.full
+  val kindProjector = "org.typelevel" %% "kind-projector" % Version.kindProjector cross CrossVersion.full
   val betterMonadicFor = "com.olegpy" %% "better-monadic-for" % Version.betterMonadicFor
 
   val logback = "ch.qos.logback" % "logback-classic" % Version.logback
+  val log4cats = "io.chrisdavenport" %% "log4cats-core" % Version.log4cats
 }
 
 object Version {
   val cats = "2.3.1"
   val zioCats = "2.2.0.1"
   val zio = "1.0.3"
-  val slf4j = "1.7.30"
   val fs2Core = "2.4.2"
   val kindProjector = "0.11.2"
   val ciris = "1.2.1"
@@ -68,4 +66,5 @@ object Version {
   val tofu = "0.9.0"
   val betterMonadicFor = "0.3.1"
   val logback = "1.2.3"
+  val log4cats = "1.1.1"
 }

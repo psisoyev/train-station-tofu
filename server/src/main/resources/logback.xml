@@ -1,11 +1,14 @@
 <configuration>
 	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
 		<encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
-			<layout class="tofu.logging.ELKLayout" />
+			<layout class="tofu.logging.ELKLayout"/>
 		</encoder>
 	</appender>
 
+	<logger name="org.apache.pulsar.client.impl" level="OFF"/>
+	<logger name="org.http4s.server.blaze" level="OFF"/>
+
 	<root level="INFO">
-		<appender-ref ref="STDOUT" />
+		<appender-ref ref="STDOUT"/>
 	</root>
 </configuration>

@@ -13,17 +13,19 @@ import com.psisoyev.train.station.departure.{ DepartureTracker, Departures }
 import cr.pulsar.schema.circe.circeBytesInject
 import cr.pulsar.{ Consumer, Producer }
 import fs2.Stream
-import io.chrisdavenport.log4cats.Logger
+import io.chrisdavenport.log4cats.{ Logger, StructuredLogger }
 import org.http4s.implicits._
 import org.http4s.server.blaze.BlazeServerBuilder
 import org.http4s.{ Request, Response }
 import tofu.generate.GenUUID
 import tofu.logging.Logging
+import tofu.logging.log4cats._
+import tofu.logging.zlogs.ZLogs
 import tofu.zioInstances.implicits._
 import tofu.{ HasProvide, Raise, WithRun }
-import zio.{ Ref => _, _ }
 import zio.interop.catz._
 import zio.interop.catz.implicits._
+import zio.{ Ref => _, _ }
 
 object Main extends zio.App {
   type Init[T]      = Task[T]
@@ -32,21 +34,33 @@ object Main extends zio.App {
 
   override def run(args: List[String]): URIO[ZEnv, ExitCode] =
     Task.concurrentEffectWith { implicit CE =>
-      Resources
-        .make[Init, Run, Event]
-        .use { case Resources(config, producer, consumers, logger) =>
-          implicit val logging: Logger[Run]  = logger
-          implicit val tracing: Tracing[Run] = Tracing.make[Run]
-
-          for {
-            trainRef      <- Ref.in[Init, Run, Map[TrainId, ExpectedTrain]](Map.empty)
-            expectedTrains = ExpectedTrains.make[Run](trainRef)
-            tracker        = DepartureTracker.make[Run](config.city, expectedTrains)
-            routes         = makeRoutes[Init, Run](config, producer, expectedTrains)
-            _             <- startHttpServer(config, routes).zipPar(startDepartureTracker(consumers, tracker))
-          } yield ()
-        }
+      for {
+        global <- ZLogs.withContext[Context].byName("global").map(_.widen[Run])
+        pulsar <- ZLogs.uio.byName("pulsar").map(_.widen[Init])
+        _      <- startApp(global, pulsar)
+      } yield ()
     }.exitCode
+
+  def startApp(
+    ctxLogger: Logging[Run],
+    eventLogger: Logging[Init]
+  )(implicit CE: ConcurrentEffect[Init]): Init[Unit] = {
+    implicit val runLogger: StructuredLogger[Run]   = toLog4CatsLogger(ctxLogger)
+    implicit val initLogger: StructuredLogger[Init] = toLog4CatsLogger(eventLogger)
+    implicit val tracing: Tracing[Run]              = Tracing.make[Run]
+
+    Resources
+      .make[Init, Run, Event]
+      .use { case Resources(config, producer, consumers) =>
+        for {
+          trainRef      <- Ref.in[Init, Run, Map[TrainId, ExpectedTrain]](Map.empty)
+          expectedTrains = ExpectedTrains.make[Run](trainRef)
+          tracker        = DepartureTracker.make[Run](config.city, expectedTrains)
+          routes         = makeRoutes[Init, Run](config, producer, expectedTrains)
+          _             <- startHttpServer(config, routes).zipPar(startDepartureTracker(consumers, tracker))
+        } yield ()
+      }
+  }
 
   def makeRoutes[
     Init[_]: Sync,
