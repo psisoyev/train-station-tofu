@@ -3,18 +3,17 @@ package com.psisoyev.train.station.departure
 import cats.{ Applicative, FlatMap, Monad }
 import com.psisoyev.train.station.Event.Departed
 import com.psisoyev.train.station.Tracing.ops.TracingOps
-import com.psisoyev.train.station.Context._
 import com.psisoyev.train.station._
 import com.psisoyev.train.station.departure.Departures.Departure
 import com.psisoyev.train.station.departure.Departures.DepartureError.UnexpectedDestination
 import derevo.derive
 import derevo.tagless.applyK
+import io.chrisdavenport.log4cats.Logger
 import io.circe.Decoder
 import io.circe.generic.semiauto.deriveDecoder
 import tofu.Raise
 import tofu.generate.GenUUID
 import tofu.higherKind.Mid
-import tofu.logging.Logging
 import tofu.syntax.monadic._
 import tofu.syntax.monoid.TofuSemigroupOps
 import tofu.syntax.raise._
@@ -37,17 +36,17 @@ object Departures {
     implicit val departureDecoder: Decoder[Departure] = deriveDecoder
   }
 
-  private class Logger[F[_]: FlatMap: Logging] extends Departures[Mid[F, *]] {
+  private class Log[F[_]: FlatMap: Logger] extends Departures[Mid[F, *]] {
     def register(departure: Departure): Mid[F, Departed] = { registration =>
       F.info(s"Registering $departure") *> registration <* F.info(s"Train ${departure.id} successfully departed")
     }
   }
 
-  private class Tracer[F[_]: Tracing] extends Departures[Mid[F, *]] {
+  private class Trace[F[_]: Tracing] extends Departures[Mid[F, *]] {
     def register(departure: Departure): Mid[F, Departed] = _.traced("train departure: register")
   }
 
-  private class Validator[F[_]: Monad: Raise[*[_], DepartureError]](connectedTo: List[City]) extends Departures[Mid[F, *]] {
+  private class Validate[F[_]: Monad: Raise[*[_], DepartureError]](connectedTo: List[City]) extends Departures[Mid[F, *]] {
     def register(departure: Departure): Mid[F, Departed] = { registration =>
       val destination = departure.to.city
 
@@ -71,16 +70,16 @@ object Departures {
       }
   }
 
-  def make[F[_]: Monad: GenUUID: Logging: Raise[*[_], DepartureError]: Tracing](
+  def make[F[_]: Monad: GenUUID: Logger: Raise[*[_], DepartureError]: Tracing](
     city: City,
     connectedTo: List[City]
   ): Departures[F] = {
     val service = new Impl[F](city)
 
-    val tracer: Departures[Mid[F, *]]    = new Tracer[F]
-    val logger: Departures[Mid[F, *]]    = new Logger[F]
-    val validator: Departures[Mid[F, *]] = new Validator[F](connectedTo)
+    val trace: Departures[Mid[F, *]]    = new Trace[F]
+    val log: Departures[Mid[F, *]]      = new Log[F]
+    val validate: Departures[Mid[F, *]] = new Validate[F](connectedTo)
 
-    (logger |+| validator |+| tracer).attach(service)
+    (log |+| validate |+| trace).attach(service)
   }
 }

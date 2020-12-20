@@ -49,9 +49,9 @@ object Config {
   private def value: ConfigValue[Config] =
     (
       pulsarConfigValue,
-      env("HTTP_PORT").as[HttpPort].withDefault(8080),
-      env("CITY").as[City],
-      env("CONNECTED_TO").as[List[City]]
+      env("HTTP_PORT").as[HttpPort].withDefault(8099),
+      env("CITY").as[City].default(City("Zurich")),
+      env("CONNECTED_TO").as[List[City]].default(List(City("Bern")))
     ).parMapN(Config.apply)
 
   def load[F[_]: Async: ContextShift]: F[Config] = value.load[F]

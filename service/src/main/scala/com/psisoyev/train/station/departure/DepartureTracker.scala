@@ -7,8 +7,8 @@ import com.psisoyev.train.station.arrival.ExpectedTrains
 import com.psisoyev.train.station.arrival.ExpectedTrains.ExpectedTrain
 import derevo.derive
 import derevo.tagless.applyK
+import io.chrisdavenport.log4cats.Logger
 import tofu.higherKind.Mid
-import tofu.logging.Logging
 import tofu.syntax.monadic._
 
 @derive(applyK)
@@ -18,7 +18,7 @@ trait DepartureTracker[F[_]] {
 
 object DepartureTracker {
 
-  private class Logger[F[_]: FlatMap: Logging] extends DepartureTracker[Mid[F, *]] {
+  private class Log[F[_]: FlatMap: Logger] extends DepartureTracker[Mid[F, *]] {
     def save(e: Departed): Mid[F, Unit] =
       _ *> F.info(s"${e.to.city} is expecting ${e.trainId} from ${e.from} at ${e.expected}")
   }
@@ -30,12 +30,12 @@ object DepartureTracker {
         .whenA(e.to.city == city)
   }
 
-  def make[F[_]: Monad: Logging](
+  def make[F[_]: Monad: Logger](
     city: City,
     expectedTrains: ExpectedTrains[F]
   ): DepartureTracker[F] = {
     val service = new Impl[F](city, expectedTrains)
 
-    (new Logger[F]).attach(service)
+    (new Log[F]).attach(service)
   }
 }

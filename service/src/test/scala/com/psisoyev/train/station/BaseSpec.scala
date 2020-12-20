@@ -6,12 +6,11 @@ import cats.effect.concurrent.Ref
 import cats.implicits._
 import com.psisoyev.train.station.arrival.ExpectedTrains.ExpectedTrain
 import cr.pulsar.{ MessageKey, Producer }
+import io.chrisdavenport.log4cats.Logger
 import org.apache.pulsar.client.api.MessageId
 import tofu.generate.GenUUID
-import tofu.logging.{ Logging, Logs }
-import zio.interop.catz._
-import zio.test.DefaultRunnableSpec
 import zio.Task
+import zio.test.DefaultRunnableSpec
 
 import java.util.UUID
 
@@ -29,13 +28,18 @@ trait BaseSpec extends DefaultRunnableSpec {
       }
     }
 
-  implicit def emptyLogger: Logging[Task] =
-    zio
-      .Runtime
-      .default
-      .unsafeRun(
-        Logs.empty[Task, Task].byName("test")
-      )
+  implicit def emptyLogger: Logger[Task] = new Logger[Task] {
+    override def error(message: => String): Task[Unit]               = Task.unit
+    override def warn(message: => String): Task[Unit]                = Task.unit
+    override def info(message: => String): Task[Unit]                = Task.unit
+    override def debug(message: => String): Task[Unit]               = Task.unit
+    override def trace(message: => String): Task[Unit]               = Task.unit
+    override def error(t: Throwable)(message: => String): Task[Unit] = Task.unit
+    override def warn(t: Throwable)(message: => String): Task[Unit]  = Task.unit
+    override def info(t: Throwable)(message: => String): Task[Unit]  = Task.unit
+    override def debug(t: Throwable)(message: => String): Task[Unit] = Task.unit
+    override def trace(t: Throwable)(message: => String): Task[Unit] = Task.unit
+  }
 
   val fakeUuid: UUID                                      = UUID.randomUUID()
   val eventId: EventId                                    = EventId(fakeUuid)

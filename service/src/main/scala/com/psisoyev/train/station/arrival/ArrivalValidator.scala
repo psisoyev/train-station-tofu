@@ -8,9 +8,9 @@ import com.psisoyev.train.station.arrival.ExpectedTrains.ExpectedTrain
 import com.psisoyev.train.station.{ Actual, TrainId }
 import derevo.derive
 import derevo.tagless.applyK
+import io.chrisdavenport.log4cats.Logger
 import tofu.Raise
 import tofu.higherKind.Mid
-import tofu.logging.Logging
 import tofu.syntax.monadic._
 import tofu.syntax.raise._
 
@@ -29,7 +29,7 @@ object ArrivalValidator {
 
   case class ValidatedArrival(trainId: TrainId, time: Actual, expectedTrain: ExpectedTrain)
 
-  private class Logger[F[_]: FlatMap: Logging] extends ArrivalValidator[Mid[F, *]] {
+  private class Log[F[_]: FlatMap: Logger] extends ArrivalValidator[Mid[F, *]] {
     def validate(arrival: Arrival): Mid[F, ValidatedArrival] = { validation =>
       F.info(s"Validating $arrival") *> validation <* F.info(s"Train ${arrival.trainId} validated")
     }
@@ -46,12 +46,11 @@ object ArrivalValidator {
         }
   }
 
-  def make[F[_]: Monad: Logging: Raise[*[_], ArrivalError]](
+  def make[F[_]: Monad: Logger: Raise[*[_], ArrivalError]](
     expectedTrains: ExpectedTrains[F]
   ): ArrivalValidator[F] = {
     val service = new Impl[F](expectedTrains)
 
-    val logger: ArrivalValidator[Mid[F, *]] = new Logger[F]
-    logger.attach(service)
+    (new Log[F]).attach(service)
   }
 }
