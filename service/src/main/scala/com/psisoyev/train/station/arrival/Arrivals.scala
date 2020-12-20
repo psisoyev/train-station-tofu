@@ -6,11 +6,11 @@ import com.psisoyev.train.station.arrival.ArrivalValidator.ValidatedArrival
 import com.psisoyev.train.station.{ Actual, City, EventId, To, TrainId }
 import derevo.derive
 import derevo.tagless.applyK
+import io.chrisdavenport.log4cats.Logger
 import io.circe.Decoder
 import io.circe.generic.semiauto._
 import tofu.generate.GenUUID
 import tofu.higherKind.Mid
-import tofu.logging.Logging
 import tofu.syntax.monadic._
 import tofu.syntax.monoid.TofuSemigroupOps
 
@@ -25,7 +25,7 @@ object Arrivals {
     implicit val arrivalDecoder: Decoder[Arrival] = deriveDecoder
   }
 
-  private class Logger[F[_]: FlatMap: Logging] extends Arrivals[Mid[F, *]] {
+  private class Log[F[_]: FlatMap: Logger] extends Arrivals[Mid[F, *]] {
     def register(arrival: ValidatedArrival): Mid[F, Arrived] = { registration =>
       val before = F.info(s"Registering $arrival")
       val after  = F.info(s"Train ${arrival.trainId} successfully arrived")
@@ -34,7 +34,7 @@ object Arrivals {
     }
   }
 
-  private class Cleaner[F[_]: Monad](expectedTrains: ExpectedTrains[F]) extends Arrivals[Mid[F, *]] {
+  private class Clean[F[_]: Monad](expectedTrains: ExpectedTrains[F]) extends Arrivals[Mid[F, *]] {
     def register(arrival: ValidatedArrival): Mid[F, Arrived] =
       _.flatTap(_ => expectedTrains.remove(arrival.trainId))
   }
@@ -53,15 +53,15 @@ object Arrivals {
       }
   }
 
-  def make[F[_]: Monad: GenUUID: Logging](
+  def make[F[_]: Monad: GenUUID: Logger](
     city: City,
     expectedTrains: ExpectedTrains[F]
   ): Arrivals[F] = {
     val service = new Impl[F](city)
 
-    val logger: Arrivals[Mid[F, *]]  = new Logger[F]
-    val cleaner: Arrivals[Mid[F, *]] = new Cleaner[F](expectedTrains)
+    val log: Arrivals[Mid[F, *]]   = new Log[F]
+    val clean: Arrivals[Mid[F, *]] = new Clean[F](expectedTrains)
 
-    (logger |+| cleaner).attach(service)
+    (log |+| clean).attach(service)
   }
 }

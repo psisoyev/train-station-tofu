@@ -13,6 +13,7 @@ import com.psisoyev.train.station.departure.{ DepartureTracker, Departures }
 import cr.pulsar.schema.circe.circeBytesInject
 import cr.pulsar.{ Consumer, Producer }
 import fs2.Stream
+import io.chrisdavenport.log4cats.Logger
 import org.http4s.implicits._
 import org.http4s.server.blaze.BlazeServerBuilder
 import org.http4s.{ Request, Response }
@@ -34,7 +35,7 @@ object Main extends zio.App {
       Resources
         .make[Init, Run, Event]
         .use { case Resources(config, producer, consumers, logger) =>
-          implicit val logging: Logging[Run] = logger
+          implicit val logging: Logger[Run]  = logger
           implicit val tracing: Tracing[Run] = Tracing.make[Run]
 
           for {
@@ -49,7 +50,7 @@ object Main extends zio.App {
 
   def makeRoutes[
     Init[_]: Sync,
-    Run[_]: Monad: GenUUID: WithRun[*[_], Init, Context]: Logging: Tracing
+    Run[_]: Monad: GenUUID: WithRun[*[_], Init, Context]: Logger: Tracing
   ](
     config: Config,
     producer: Producer[Init, Event],

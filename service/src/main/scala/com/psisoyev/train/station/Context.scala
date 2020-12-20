@@ -18,7 +18,7 @@ object Context {
   @newtype case class TraceId(value: String)
   @newtype case class UserId(value: String)
 
-  implicit val ContextShow: Show[Context]                                         = Show.show(ctx => s"[USERID======${ctx.userId.value}]")
+  implicit val ContextShow: Show[Context]                                         = Show.show(ctx => s"[${ctx.userId.value}]")
   implicit val ContextLoggable: Loggable[Context]                                 = loggable.byShow("context")
   implicit def loggableContext[F[_]: *[_] HasContext Context]: LoggableContext[F] =
     LoggableContext.of[F].instance

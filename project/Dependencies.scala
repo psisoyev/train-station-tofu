@@ -16,7 +16,10 @@ object Dependencies {
   val tofu    = List(
     "ru.tinkoff" %% "tofu",
     "ru.tinkoff" %% "tofu-logging",
-    "ru.tinkoff" %% "tofu-zio-core"
+    "ru.tinkoff" %% "tofu-logging-log4cats",
+    "ru.tinkoff" %% "tofu-logging-layout",
+    "ru.tinkoff" %% "tofu-zio-core",
+    "ru.tinkoff" %% "tofu-zio-logging"
   ).map(_ % Version.tofu)
 
   val http4s  = List(
@@ -45,6 +48,8 @@ object Dependencies {
   val contextApplied = "org.augustjune" %% "context-applied" % Version.contextApplied
   val kindProjector  = "org.typelevel"  %% "kind-projector"  % Version.kindProjector cross CrossVersion.full
   val betterMonadicFor = "com.olegpy" %% "better-monadic-for" % Version.betterMonadicFor
+
+  val logback = "ch.qos.logback" % "logback-classic" % Version.logback
 }
 
 object Version {
@@ -62,4 +67,5 @@ object Version {
   val contextApplied = "0.1.4"
   val tofu = "0.9.0"
   val betterMonadicFor = "0.3.1"
+  val logback = "1.2.3"
 }

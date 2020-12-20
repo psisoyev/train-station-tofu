@@ -2,17 +2,15 @@ package com.psisoyev.train.station
 
 import cats.FlatMap
 import com.psisoyev.train.station.Context._
-import tofu.generate.GenUUID
-import tofu.logging.Logging
+import io.chrisdavenport.log4cats.Logger
 import tofu.syntax.context.askF
 import tofu.syntax.monadic._
-import tofu.{ HasLocal, HasProvide }
 
 trait Tracing[F[_]] {
   def traced[A](opName: String)(fa: F[A]): F[A]
 }
 object Tracing      {
-  def make[F[_]: FlatMap: Logging: WithCtx]: Tracing[F] = new Tracing[F] {
+  def make[F[_]: FlatMap: Logger: WithCtx]: Tracing[F] = new Tracing[F] {
     def traced[A](opName: String)(fa: F[A]): F[A] =
       askF[F]((ctx: Context) => F.info(s"[Tracing][traceId=${ctx.traceId}] $opName") *> fa)
   }
