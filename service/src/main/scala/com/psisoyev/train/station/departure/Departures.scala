@@ -1,6 +1,6 @@
 package com.psisoyev.train.station.departure
 
-import cats.{ Applicative, FlatMap, Monad }
+import cats.{ Applicative, FlatMap, Monad, Show }
 import com.psisoyev.train.station.Event.Departed
 import com.psisoyev.train.station.Tracing.ops.TracingOps
 import com.psisoyev.train.station._
@@ -38,7 +38,10 @@ object Departures {
 
   private class Log[F[_]: FlatMap: Logger] extends Departures[Mid[F, *]] {
     def register(departure: Departure): Mid[F, Departed] = { registration =>
-      F.info(s"Registering $departure") *> registration <* F.info(s"Train ${departure.id} successfully departed")
+      val before = F.info(s"Registering $departure")
+      val after  = F.info(s"Train ${departure.id.value} successfully departed")
+
+      before *> registration <* after
     }
   }
 

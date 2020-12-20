@@ -2,7 +2,7 @@ package com.psisoyev.train.station
 
 import cats.FlatMap
 import com.psisoyev.train.station.Context._
-import io.chrisdavenport.log4cats.Logger
+import io.chrisdavenport.log4cats.StructuredLogger
 import tofu.syntax.context.askF
 import tofu.syntax.monadic._
 
@@ -10,9 +10,12 @@ trait Tracing[F[_]] {
   def traced[A](opName: String)(fa: F[A]): F[A]
 }
 object Tracing      {
-  def make[F[_]: FlatMap: Logger: WithCtx]: Tracing[F] = new Tracing[F] {
+  def make[F[_]: FlatMap: StructuredLogger: WithCtx]: Tracing[F] = new Tracing[F] {
     def traced[A](opName: String)(fa: F[A]): F[A] =
-      askF[F]((ctx: Context) => F.info(s"[Tracing][traceId=${ctx.traceId}] $opName") *> fa)
+      askF[F] { ctx: Context =>
+        val context = Map("traceId" -> ctx.traceId.value, "operation" -> opName)
+        F.trace(context)("") *> fa
+      }
   }
 
   object ops {

@@ -2,12 +2,12 @@ package com.psisoyev.train.station
 
 import cats.implicits._
 import cats.{ Defer, FlatMap, Monad }
+import com.psisoyev.train.station.Context.{ withUserContext, UserId }
 import com.psisoyev.train.station.arrival.ArrivalValidator.ArrivalError
 import com.psisoyev.train.station.arrival.Arrivals.Arrival
 import com.psisoyev.train.station.arrival.{ ArrivalValidator, Arrivals }
 import com.psisoyev.train.station.departure.Departures
-import com.psisoyev.train.station.departure.Departures.{ Departure, DepartureError }
-import com.psisoyev.train.station.Context.{ withUserContext, UserId }
+import com.psisoyev.train.station.departure.Departures.DepartureError
 import cr.pulsar.Producer
 import io.circe.Decoder
 import org.http4s.circe.CirceEntityEncoder._
