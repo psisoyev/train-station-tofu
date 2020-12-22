@@ -1,6 +1,6 @@
 package com.psisoyev.train.station.arrival
 
-import cats.{ Applicative, FlatMap, Monad }
+import cats.{ FlatMap, Functor, Monad }
 import com.psisoyev.train.station.Event.Arrived
 import com.psisoyev.train.station.arrival.ArrivalValidator.ValidatedArrival
 import com.psisoyev.train.station.{ Actual, City, EventId, To, TrainId }
@@ -39,7 +39,7 @@ object Arrivals {
       _.flatTap(_ => expectedTrains.remove(arrival.trainId))
   }
 
-  private class Impl[F[_]: Applicative: GenUUID](city: City) extends Arrivals[F] {
+  private class Impl[F[_]: Functor: GenUUID](city: City) extends Arrivals[F] {
     override def register(arrival: ValidatedArrival): F[Arrived] =
       F.randomUUID.map { id =>
         Arrived(
