@@ -1,6 +1,6 @@
 package com.psisoyev.train.station.departure
 
-import cats.{ Applicative, FlatMap, Monad, Show }
+import cats.{ Applicative, FlatMap, Monad }
 import com.psisoyev.train.station.Event.Departed
 import com.psisoyev.train.station.Tracing.ops.TracingOps
 import com.psisoyev.train.station._
