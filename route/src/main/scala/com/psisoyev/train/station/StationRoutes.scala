@@ -15,28 +15,25 @@ import org.http4s.circe._
 import org.http4s.dsl.Http4sDsl
 import org.http4s.{ HttpRoutes, _ }
 import tofu.generate.GenUUID
-import tofu.{ Handle, HasProvide }
+import tofu.HasProvide
+import tofu.syntax.handle._
 
 class StationRoutes[
-  I[_]: Monad: Defer: JsonDecoder: GenUUID,
+  I[_]: Monad: Defer: JsonDecoder: GenUUID: DepartureError.Handling: ArrivalError.Handling,
   F[_]: FlatMap: HasProvide[*[_], I, Context]
 ](
   arrivals: Arrivals[F],
   arrivalValidator: ArrivalValidator[F],
   producer: Producer[I, Event],
   departures: Departures[F]
-)(implicit
-  E1: Handle[I, ArrivalError],
-  E2: Handle[I, DepartureError]
 ) extends Http4sDsl[I] {
   val routes: HttpRoutes[I] = HttpRoutes.of[I] {
     case req @ POST -> Root / "arrival"   =>
       val register = (a: Arrival) => arrivalValidator.validate(a).flatMap(arrivals.register)
-      val res      = authorizedRegistration(req)(register)
-      E1.handleWith(res)(handleArrivalErrors)
+      authorizedRegistration(req)(register).handleWith(handleArrivalErrors)
     case req @ POST -> Root / "departure" =>
-      val res = authorizedRegistration(req)(departures.register)
-      E2.handleWith(res)(handleDepartureErrors)
+      authorizedRegistration(req)(departures.register)
+        .handleWith(handleDepartureErrors)
   }
 
   def authorizedRegistration[T: Decoder, E <: Event](req: Request[I])(register: T => F[E]): I[Response[I]] =

@@ -9,7 +9,7 @@ import com.psisoyev.train.station.{ Actual, TrainId }
 import derevo.derive
 import derevo.tagless.applyK
 import io.chrisdavenport.log4cats.Logger
-import tofu.Raise
+import tofu.{ Handle, Raise }
 import tofu.higherKind.Mid
 import tofu.syntax.monadic._
 import tofu.syntax.raise._
@@ -24,6 +24,8 @@ trait ArrivalValidator[F[_]] {
 object ArrivalValidator {
   sealed trait ArrivalError extends NoStackTrace
   object ArrivalError {
+    type Handling[F[_]] = Handle[F, ArrivalError]
+
     case class UnexpectedTrain(id: TrainId) extends ArrivalError
   }
 

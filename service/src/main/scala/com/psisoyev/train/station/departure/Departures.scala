@@ -11,7 +11,7 @@ import derevo.tagless.applyK
 import io.chrisdavenport.log4cats.Logger
 import io.circe.Decoder
 import io.circe.generic.semiauto.deriveDecoder
-import tofu.Raise
+import tofu.{ Handle, Raise }
 import tofu.generate.GenUUID
 import tofu.higherKind.Mid
 import tofu.syntax.monadic._
@@ -28,6 +28,8 @@ trait Departures[F[_]] {
 object Departures {
   sealed trait DepartureError extends NoStackTrace
   object DepartureError {
+    type Handling[F[_]] = Handle[F, DepartureError]
+
     case class UnexpectedDestination(city: City) extends DepartureError
   }
 

@@ -43,15 +43,15 @@ object Main extends zio.App {
       .make[Init, Run, Event]
       .use { case Resources(config, producer, consumers) =>
         for {
-          trainRef              <- Ref.in[Init, Run, Map[TrainId, ExpectedTrain]](Map.empty)
-          expectedTrains         = ExpectedTrains.make[Run](trainRef)
-          tracker                = DepartureTracker.make[Run](config.city, expectedTrains)
-          routes                 = Routes.make[Init, Run](config, producer, expectedTrains)
+          trainRef      <- Ref.in[Init, Run, Map[TrainId, ExpectedTrain]](Map.empty)
+          expectedTrains = ExpectedTrains.make[Run](trainRef)
+          tracker        = DepartureTracker.make[Run](config.city, expectedTrains)
+          routes         = Routes.make[Init, Run](config, producer, expectedTrains)
 
-          startHttpServer        = HttpServer.start(config, routes)
-          startDepartureTracker  = TrackerEngine.start(consumers, tracker)
+          startHttpServer       = HttpServer.start(config, routes)
+          startDepartureTracker = TrackerEngine.start(consumers, tracker)
 
-          _                     <- startHttpServer.zipPar(startDepartureTracker)
+          _ <- startHttpServer.zipPar(startDepartureTracker)
         } yield ()
       }
   }
