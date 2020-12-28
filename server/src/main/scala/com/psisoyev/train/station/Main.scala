@@ -1,28 +1,18 @@
 package com.psisoyev.train.station
 
-import cats.Monad
 import cats.data.Kleisli
+import cats.effect.ConcurrentEffect
 import cats.effect.concurrent.Ref
-import cats.effect.{ Concurrent, ConcurrentEffect, Sync, Timer }
-import com.psisoyev.train.station.Event.Departed
-import com.psisoyev.train.station.arrival.ArrivalValidator.ArrivalError
+import com.psisoyev.train.station.arrival.ExpectedTrains
 import com.psisoyev.train.station.arrival.ExpectedTrains.ExpectedTrain
-import com.psisoyev.train.station.arrival.{ ArrivalValidator, Arrivals, ExpectedTrains }
-import com.psisoyev.train.station.departure.Departures.DepartureError
-import com.psisoyev.train.station.departure.{ DepartureTracker, Departures }
+import com.psisoyev.train.station.departure.DepartureTracker
 import cr.pulsar.schema.circe.circeBytesInject
-import cr.pulsar.{ Consumer, Producer }
-import fs2.Stream
-import io.chrisdavenport.log4cats.{ Logger, StructuredLogger }
-import org.http4s.implicits._
-import org.http4s.server.blaze.BlazeServerBuilder
+import io.chrisdavenport.log4cats.StructuredLogger
 import org.http4s.{ Request, Response }
-import tofu.generate.GenUUID
 import tofu.logging.Logging
 import tofu.logging.log4cats._
 import tofu.logging.zlogs.ZLogs
 import tofu.zioInstances.implicits._
-import tofu.{ HasProvide, Raise, WithRun }
 import zio.interop.catz._
 import zio.interop.catz.implicits._
 import zio.{ Ref => _, _ }
@@ -53,54 +43,16 @@ object Main extends zio.App {
       .make[Init, Run, Event]
       .use { case Resources(config, producer, consumers) =>
         for {
-          trainRef      <- Ref.in[Init, Run, Map[TrainId, ExpectedTrain]](Map.empty)
-          expectedTrains = ExpectedTrains.make[Run](trainRef)
-          tracker        = DepartureTracker.make[Run](config.city, expectedTrains)
-          routes         = makeRoutes[Init, Run](config, producer, expectedTrains)
-          _             <- startHttpServer(config, routes).zipPar(startDepartureTracker(consumers, tracker))
+          trainRef              <- Ref.in[Init, Run, Map[TrainId, ExpectedTrain]](Map.empty)
+          expectedTrains         = ExpectedTrains.make[Run](trainRef)
+          tracker                = DepartureTracker.make[Run](config.city, expectedTrains)
+          routes                 = Routes.make[Init, Run](config, producer, expectedTrains)
+
+          startHttpServer        = HttpServer.start(config, routes)
+          startDepartureTracker  = TrackerEngine.start(consumers, tracker)
+
+          _                     <- startHttpServer.zipPar(startDepartureTracker)
         } yield ()
       }
   }
-
-  def makeRoutes[
-    Init[_]: Sync,
-    Run[_]: Monad: GenUUID: WithRun[*[_], Init, Context]: Logger: Tracing
-  ](
-    config: Config,
-    producer: Producer[Init, Event],
-    expectedTrains: ExpectedTrains[Run]
-  )(implicit
-    A: Raise[Run, ArrivalError],
-    D: Raise[Run, DepartureError]
-  ): Routes[Init] = {
-    val arrivalValidator = ArrivalValidator.make[Run](expectedTrains)
-    val arrivals         = Arrivals.make[Run](config.city, expectedTrains)
-    val departures       = Departures.make[Run](config.city, config.connectedTo)
-
-    new StationRoutes[Init, Run](arrivals, arrivalValidator, producer, departures).routes.orNotFound
-  }
-
-  def startHttpServer[Init[_]: ConcurrentEffect: Timer](
-    config: Config,
-    routes: Routes[Init]
-  ): Init[Unit] =
-    BlazeServerBuilder[Init](platform.executor.asEC)
-      .bindHttp(config.httpPort.value, "0.0.0.0")
-      .withHttpApp(routes)
-      .serve
-      .compile
-      .drain
-
-  def startDepartureTracker[Init[_]: Concurrent: GenUUID, Run[_]: HasProvide[*[_], Init, Context]](
-    consumers: List[Consumer[Init, Event]],
-    departureTracker: DepartureTracker[Run]
-  ): Init[Unit] =
-    Stream
-      .emits(consumers)
-      .map(_.autoSubscribe)
-      .parJoinUnbounded
-      .collect { case e: Departed => e }
-      .evalMap(e => Context.withSystemContext(departureTracker.save(e)))
-      .compile
-      .drain
 }
