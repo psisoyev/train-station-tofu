@@ -25,6 +25,7 @@ object ArrivalValidator {
   sealed trait ArrivalError extends NoStackTrace
   object ArrivalError {
     type Handling[F[_]] = Handle[F, ArrivalError]
+    type Raising[F[_]]  = Raise[F, ArrivalError]
 
     case class UnexpectedTrain(id: TrainId) extends ArrivalError
   }
@@ -37,7 +38,7 @@ object ArrivalValidator {
     }
   }
 
-  private class Impl[F[_]: Monad: Raise[*[_], ArrivalError]](expectedTrains: ExpectedTrains[F]) extends ArrivalValidator[F] {
+  private class Impl[F[_]: Monad: ArrivalError.Raising](expectedTrains: ExpectedTrains[F]) extends ArrivalValidator[F] {
     override def validate(arrival: Arrival): F[ValidatedArrival] =
       expectedTrains
         .get(arrival.trainId)
@@ -48,7 +49,7 @@ object ArrivalValidator {
         }
   }
 
-  def make[F[_]: Monad: Logger: Raise[*[_], ArrivalError]](
+  def make[F[_]: Monad: Logger: ArrivalError.Raising](
     expectedTrains: ExpectedTrains[F]
   ): ArrivalValidator[F] = {
     val service = new Impl[F](expectedTrains)

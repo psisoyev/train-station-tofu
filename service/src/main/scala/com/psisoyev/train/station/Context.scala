@@ -8,7 +8,7 @@ import tofu.generate.GenUUID
 import tofu.logging.derivation.loggable
 import tofu.logging.{ Loggable, LoggableContext }
 import tofu.syntax.context.runContext
-import tofu.{ HasContext, HasLocal, HasProvide }
+import tofu.{ HasContext, HasLocal, HasProvide, WithRun }
 
 case class Context(traceId: TraceId, userId: UserId)
 

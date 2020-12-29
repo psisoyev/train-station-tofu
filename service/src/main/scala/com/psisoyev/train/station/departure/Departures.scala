@@ -29,6 +29,7 @@ object Departures {
   sealed trait DepartureError extends NoStackTrace
   object DepartureError {
     type Handling[F[_]] = Handle[F, DepartureError]
+    type Raising[F[_]]  = Raise[F, DepartureError]
 
     case class UnexpectedDestination(city: City) extends DepartureError
   }
@@ -51,7 +52,7 @@ object Departures {
     def register(departure: Departure): Mid[F, Departed] = _.traced("train departure: register")
   }
 
-  private class Validate[F[_]: Monad: Raise[*[_], DepartureError]](connectedTo: List[City]) extends Departures[Mid[F, *]] {
+  private class Validate[F[_]: Monad: DepartureError.Raising](connectedTo: List[City]) extends Departures[Mid[F, *]] {
     def register(departure: Departure): Mid[F, Departed] = { registration =>
       val destination = departure.to.city
 
@@ -75,7 +76,7 @@ object Departures {
       }
   }
 
-  def make[F[_]: Monad: GenUUID: Logger: Raise[*[_], DepartureError]: Tracing](
+  def make[F[_]: Monad: GenUUID: Logger: DepartureError.Raising: Tracing](
     city: City,
     connectedTo: List[City]
   ): Departures[F] = {
