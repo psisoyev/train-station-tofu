@@ -1,12 +1,12 @@
 package com.psisoyev.train.station
 
-import cats.effect.{ Concurrent, ContextShift, Resource, Sync }
+import cats.effect.{Concurrent, ContextShift, Resource, Sync}
 import cats.implicits._
-import cats.{ Inject, Parallel }
-import cr.pulsar.{ Consumer, Producer, Pulsar, Subscription, Topic, Config => PulsarConfig }
+import cats.{Inject, Parallel}
+import com.psisoyev.train.station.Context.WithCtx
+import cr.pulsar.{Consumer, Producer, Pulsar, Subscription, Topic, Config => PulsarConfig}
 import io.chrisdavenport.log4cats.StructuredLogger
 import io.circe.Encoder
-import tofu.WithContext
 
 final case class Resources[I[_], F[_], E](
   config: Config,
@@ -17,7 +17,7 @@ final case class Resources[I[_], F[_], E](
 object Resources {
   def make[
     I[_]: Concurrent: ContextShift: Parallel: StructuredLogger,
-    F[_]: Sync: *[_] WithContext Context,
+    F[_]: Sync: WithCtx,
     E: Inject[*, Array[Byte]]: Encoder
   ]: Resource[I, Resources[I, F, E]] = {
     def topic(config: PulsarConfig, city: City) =
