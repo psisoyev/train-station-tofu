@@ -6,7 +6,7 @@ import cats.{ Inject, Parallel }
 import cr.pulsar.{ Consumer, Producer, Pulsar, Subscription, Topic, Config => PulsarConfig }
 import io.chrisdavenport.log4cats.StructuredLogger
 import io.circe.Encoder
-import tofu.HasContext
+import tofu.WithContext
 
 final case class Resources[I[_], F[_], E](
   config: Config,
@@ -17,7 +17,7 @@ final case class Resources[I[_], F[_], E](
 object Resources {
   def make[
     I[_]: Concurrent: ContextShift: Parallel: StructuredLogger,
-    F[_]: Sync: *[_] HasContext Context,
+    F[_]: Sync: *[_] WithContext Context,
     E: Inject[*, Array[Byte]]: Encoder
   ]: Resource[I, Resources[I, F, E]] = {
     def topic(config: PulsarConfig, city: City) =
