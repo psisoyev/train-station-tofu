@@ -27,7 +27,7 @@ object Context {
 
   def withUserContext[
     I[_]: GenUUID: FlatMap,
-    F[_]: WithProvide[*[_], I, Context],
+    F[_]: RunsCtx[*[_], I],
     T
   ](userId: UserId)(action: F[T]): I[T] =
     I.randomUUID.map(id => TraceId(id.toString)).flatMap { traceId =>
@@ -36,7 +36,7 @@ object Context {
 
   def withSystemContext[
     I[_]: GenUUID: FlatMap,
-    F[_]: WithProvide[*[_], I, Context],
+    F[_]: RunsCtx[*[_], I],
     T
   ](action: F[T]): I[T] =
     withUserContext[I, F, T](UserId("system"))(action)
