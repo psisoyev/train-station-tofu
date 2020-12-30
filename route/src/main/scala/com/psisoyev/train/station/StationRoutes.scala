@@ -15,12 +15,12 @@ import org.http4s.circe._
 import org.http4s.dsl.Http4sDsl
 import org.http4s.{ HttpRoutes, _ }
 import tofu.generate.GenUUID
-import tofu.HasProvide
 import tofu.syntax.handle._
+import Context.RunsCtx
 
 class StationRoutes[
   I[_]: Monad: Defer: JsonDecoder: GenUUID: DepartureError.Handling: ArrivalError.Handling,
-  F[_]: FlatMap: HasProvide[*[_], I, Context]
+  F[_]: FlatMap: RunsCtx[*[_], I]
 ](
   arrivals: Arrivals[F],
   arrivalValidator: ArrivalValidator[F],
