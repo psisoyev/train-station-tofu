@@ -1,10 +1,10 @@
 package com.psisoyev.train.station
 
-import cats.effect.{Concurrent, ContextShift, Resource, Sync}
+import cats.effect.{ Concurrent, ContextShift, Resource, Sync }
 import cats.implicits._
-import cats.{Inject, Parallel}
+import cats.{ Inject, Parallel }
 import com.psisoyev.train.station.Context.WithCtx
-import cr.pulsar.{Consumer, Producer, Pulsar, Subscription, Topic, Config => PulsarConfig}
+import cr.pulsar.{ Consumer, Producer, Pulsar, Subscription, Topic, Config => PulsarConfig }
 import io.chrisdavenport.log4cats.StructuredLogger
 import io.circe.Encoder
 
