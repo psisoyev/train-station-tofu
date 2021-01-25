@@ -14,7 +14,7 @@ object Tracing      {
     def traced[A](opName: String)(fa: F[A]): F[A] =
       askF[F] { ctx: Context =>
         val context = Map("traceId" -> ctx.traceId.value, "operation" -> opName)
-        F.trace(context)("") *> fa
+        F.trace(context)(s"[Tracing] $opName") *> fa
       }
   }
 
