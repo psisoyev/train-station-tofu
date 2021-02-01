@@ -3,7 +3,8 @@ package com.psisoyev.train.station.arrival
 import cats.{ FlatMap, Functor, Monad }
 import com.psisoyev.train.station.Event.Arrived
 import com.psisoyev.train.station.arrival.ArrivalValidator.ValidatedArrival
-import com.psisoyev.train.station.{ Actual, City, EventId, To, TrainId }
+import com.psisoyev.train.station.Tracing.ops.TracingOps
+import com.psisoyev.train.station.{ Actual, City, EventId, To, Tracing, TrainId }
 import derevo.derive
 import derevo.tagless.applyK
 import io.chrisdavenport.log4cats.Logger
@@ -34,6 +35,10 @@ object Arrivals {
     }
   }
 
+  private class Trace[F[_]: Tracing] extends Arrivals[Mid[F, *]] {
+    def register(arrival: ValidatedArrival): Mid[F, Arrived] = _.traced("train arrival: register")
+  }
+
   private class Clean[F[_]: Monad](expectedTrains: ExpectedTrains[F]) extends Arrivals[Mid[F, *]] {
     def register(arrival: ValidatedArrival): Mid[F, Arrived] =
       _.flatTap(_ => expectedTrains.remove(arrival.trainId))
@@ -53,15 +58,16 @@ object Arrivals {
       }
   }
 
-  def make[F[_]: Monad: GenUUID: Logger](
+  def make[F[_]: Monad: GenUUID: Logger: Tracing](
     city: City,
     expectedTrains: ExpectedTrains[F]
   ): Arrivals[F] = {
     val service = new Impl[F](city)
 
     val log: Arrivals[Mid[F, *]]   = new Log[F]
+    val trace: Arrivals[Mid[F, *]] = new Trace[F]
     val clean: Arrivals[Mid[F, *]] = new Clean[F](expectedTrains)
 
-    (log |+| clean).attach(service)
+    (log |+| trace |+| clean).attach(service)
   }
 }

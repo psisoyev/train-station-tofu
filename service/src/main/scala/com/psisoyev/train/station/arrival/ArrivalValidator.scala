@@ -1,11 +1,13 @@
 package com.psisoyev.train.station.arrival
 
 import cats.{ FlatMap, Monad }
+import com.psisoyev.train.station.Event.Departed
 import com.psisoyev.train.station.arrival.ArrivalValidator.ArrivalError.UnexpectedTrain
 import com.psisoyev.train.station.arrival.ArrivalValidator.ValidatedArrival
 import com.psisoyev.train.station.arrival.Arrivals.Arrival
 import com.psisoyev.train.station.arrival.ExpectedTrains.ExpectedTrain
-import com.psisoyev.train.station.{ Actual, TrainId }
+import com.psisoyev.train.station.Tracing.ops.TracingOps
+import com.psisoyev.train.station.{ Actual, Tracing, TrainId }
 import derevo.derive
 import derevo.tagless.applyK
 import io.chrisdavenport.log4cats.Logger
@@ -13,6 +15,7 @@ import tofu.{ Handle, Raise }
 import tofu.higherKind.Mid
 import tofu.syntax.monadic._
 import tofu.syntax.raise._
+import tofu.syntax.monoid.TofuSemigroupOps
 
 import scala.util.control.NoStackTrace
 
@@ -38,6 +41,10 @@ object ArrivalValidator {
     }
   }
 
+  private class Trace[F[_]: Tracing] extends ArrivalValidator[Mid[F, *]] {
+    def validate(arrival: Arrival): Mid[F, ValidatedArrival] = _.traced("train arrival: validation")
+  }
+
   private class Impl[F[_]: Monad: ArrivalError.Raising](expectedTrains: ExpectedTrains[F]) extends ArrivalValidator[F] {
     override def validate(arrival: Arrival): F[ValidatedArrival] =
       expectedTrains
@@ -49,11 +56,14 @@ object ArrivalValidator {
         }
   }
 
-  def make[F[_]: Monad: Logger: ArrivalError.Raising](
+  def make[F[_]: Monad: Logger: ArrivalError.Raising: Tracing](
     expectedTrains: ExpectedTrains[F]
   ): ArrivalValidator[F] = {
     val service = new Impl[F](expectedTrains)
 
-    (new Log[F]).attach(service)
+    val log: ArrivalValidator[Mid[F, *]]   = new Log[F]
+    val trace: ArrivalValidator[Mid[F, *]] = new Trace[F]
+
+    (log |+| trace).attach(service)
   }
 }
