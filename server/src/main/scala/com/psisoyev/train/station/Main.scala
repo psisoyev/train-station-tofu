@@ -6,6 +6,7 @@ import cats.effect.concurrent.Ref
 import com.psisoyev.train.station.arrival.ExpectedTrains
 import com.psisoyev.train.station.arrival.ExpectedTrains.ExpectedTrain
 import com.psisoyev.train.station.departure.DepartureTracker
+import com.psisoyev.train.station.{ Logging => BusinessLogging }
 import cr.pulsar.schema.circe.circeBytesInject
 import io.chrisdavenport.log4cats.StructuredLogger
 import org.http4s.{ Request, Response }
@@ -37,6 +38,7 @@ object Main extends zio.App {
   )(implicit CE: ConcurrentEffect[Init]): Init[Unit] = {
     implicit val runLogger: StructuredLogger[Run]   = toLog4CatsLogger(ctxLogger)
     implicit val initLogger: StructuredLogger[Init] = toLog4CatsLogger(eventLogger)
+    implicit val logging: BusinessLogging[Run]      = BusinessLogging.make[Run]
     implicit val tracing: Tracing[Run]              = Tracing.make[Run]
 
     Resources

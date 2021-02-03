@@ -28,19 +28,6 @@ trait BaseSpec extends DefaultRunnableSpec {
       }
     }
 
-  implicit def emptyLogger: Logger[Task] = new Logger[Task] {
-    override def error(message: => String): Task[Unit]               = Task.unit
-    override def warn(message: => String): Task[Unit]                = Task.unit
-    override def info(message: => String): Task[Unit]                = Task.unit
-    override def debug(message: => String): Task[Unit]               = Task.unit
-    override def trace(message: => String): Task[Unit]               = Task.unit
-    override def error(t: Throwable)(message: => String): Task[Unit] = Task.unit
-    override def warn(t: Throwable)(message: => String): Task[Unit]  = Task.unit
-    override def info(t: Throwable)(message: => String): Task[Unit]  = Task.unit
-    override def debug(t: Throwable)(message: => String): Task[Unit] = Task.unit
-    override def trace(t: Throwable)(message: => String): Task[Unit] = Task.unit
-  }
-
   val fakeUuid: UUID                                      = UUID.randomUUID()
   val eventId: EventId                                    = EventId(fakeUuid)
   implicit def fakeUuidGen[F[_]: Applicative]: GenUUID[F] = new GenUUID[F] {
@@ -48,5 +35,8 @@ trait BaseSpec extends DefaultRunnableSpec {
   }
   implicit def fakeTracing                                = new Tracing[F] {
     override def traced[A](opName: String)(fa: F[A]): F[A] = fa
+  }
+  implicit def fakeLogging                                = new Logging[F] {
+    override def info(str: String): F[Unit] = Task.unit
   }
 }

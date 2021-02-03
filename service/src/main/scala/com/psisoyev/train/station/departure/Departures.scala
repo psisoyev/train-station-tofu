@@ -8,15 +8,14 @@ import com.psisoyev.train.station.departure.Departures.Departure
 import com.psisoyev.train.station.departure.Departures.DepartureError.UnexpectedDestination
 import derevo.derive
 import derevo.tagless.applyK
-import io.chrisdavenport.log4cats.Logger
 import io.circe.Decoder
 import io.circe.generic.semiauto.deriveDecoder
-import tofu.{ Handle, Raise }
 import tofu.generate.GenUUID
 import tofu.higherKind.Mid
 import tofu.syntax.monadic._
 import tofu.syntax.monoid.TofuSemigroupOps
 import tofu.syntax.raise._
+import tofu.{ Handle, Raise }
 
 import scala.util.control.NoStackTrace
 
@@ -39,7 +38,7 @@ object Departures {
     implicit val departureDecoder: Decoder[Departure] = deriveDecoder
   }
 
-  private class Log[F[_]: FlatMap: Logger] extends Departures[Mid[F, *]] {
+  private class Log[F[_]: FlatMap: Logging] extends Departures[Mid[F, *]] {
     def register(departure: Departure): Mid[F, Departed] = { registration =>
       val before = F.info(s"Registering $departure")
       val after  = F.info(s"Train ${departure.id.value} successfully departed")
@@ -76,7 +75,7 @@ object Departures {
       }
   }
 
-  def make[F[_]: Monad: GenUUID: Logger: DepartureError.Raising: Tracing](
+  def make[F[_]: Monad: GenUUID: Logging: DepartureError.Raising: Tracing](
     city: City,
     connectedTo: List[City]
   ): Departures[F] = {

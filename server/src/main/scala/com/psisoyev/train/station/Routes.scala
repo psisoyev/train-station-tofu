@@ -2,21 +2,21 @@ package com.psisoyev.train.station
 
 import cats.Monad
 import cats.effect.Sync
-import com.psisoyev.train.station.Context.RunsCtx
+import com.psisoyev.train.station.Context.{ RunsCtx, WithCtx }
 import com.psisoyev.train.station.Main.Routes
 import com.psisoyev.train.station.arrival.ArrivalValidator.ArrivalError
 import com.psisoyev.train.station.arrival.{ ArrivalValidator, Arrivals, ExpectedTrains }
 import com.psisoyev.train.station.departure.Departures
 import com.psisoyev.train.station.departure.Departures.DepartureError
 import cr.pulsar.Producer
-import io.chrisdavenport.log4cats.Logger
+import io.chrisdavenport.log4cats.StructuredLogger
 import org.http4s.implicits._
 import tofu.generate.GenUUID
 
 object Routes {
   def make[
     Init[_]: Sync,
-    Run[_]: Monad: GenUUID: RunsCtx[*[_], Init]: Logger: Tracing: DepartureError.Raising: ArrivalError.Raising
+    Run[_]: Monad: GenUUID: RunsCtx[*[_], Init]: Logging: Tracing: DepartureError.Raising: ArrivalError.Raising
   ](
     config: Config,
     producer: Producer[Init, Event],

@@ -2,12 +2,11 @@ package com.psisoyev.train.station.arrival
 
 import cats.{ FlatMap, Functor, Monad }
 import com.psisoyev.train.station.Event.Arrived
-import com.psisoyev.train.station.arrival.ArrivalValidator.ValidatedArrival
 import com.psisoyev.train.station.Tracing.ops.TracingOps
-import com.psisoyev.train.station.{ Actual, City, EventId, To, Tracing, TrainId }
+import com.psisoyev.train.station.arrival.ArrivalValidator.ValidatedArrival
+import com.psisoyev.train.station.{ Actual, City, EventId, Logging, To, Tracing, TrainId }
 import derevo.derive
 import derevo.tagless.applyK
-import io.chrisdavenport.log4cats.Logger
 import io.circe.Decoder
 import io.circe.generic.semiauto._
 import tofu.generate.GenUUID
@@ -26,7 +25,7 @@ object Arrivals {
     implicit val arrivalDecoder: Decoder[Arrival] = deriveDecoder
   }
 
-  private class Log[F[_]: FlatMap: Logger] extends Arrivals[Mid[F, *]] {
+  private class Log[F[_]: FlatMap: Logging] extends Arrivals[Mid[F, *]] {
     def register(arrival: ValidatedArrival): Mid[F, Arrived] = { registration =>
       val before = F.info(s"Registering $arrival")
       val after  = F.info(s"Train ${arrival.trainId} successfully arrived")
@@ -58,7 +57,7 @@ object Arrivals {
       }
   }
 
-  def make[F[_]: Monad: GenUUID: Logger: Tracing](
+  def make[F[_]: Monad: GenUUID: Logging: Tracing](
     city: City,
     expectedTrains: ExpectedTrains[F]
   ): Arrivals[F] = {

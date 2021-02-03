@@ -1,21 +1,19 @@
 package com.psisoyev.train.station.arrival
 
 import cats.{ FlatMap, Monad }
-import com.psisoyev.train.station.Event.Departed
+import com.psisoyev.train.station.Tracing.ops.TracingOps
 import com.psisoyev.train.station.arrival.ArrivalValidator.ArrivalError.UnexpectedTrain
 import com.psisoyev.train.station.arrival.ArrivalValidator.ValidatedArrival
 import com.psisoyev.train.station.arrival.Arrivals.Arrival
 import com.psisoyev.train.station.arrival.ExpectedTrains.ExpectedTrain
-import com.psisoyev.train.station.Tracing.ops.TracingOps
-import com.psisoyev.train.station.{ Actual, Tracing, TrainId }
+import com.psisoyev.train.station.{ Actual, Logging, Tracing, TrainId }
 import derevo.derive
 import derevo.tagless.applyK
-import io.chrisdavenport.log4cats.Logger
-import tofu.{ Handle, Raise }
 import tofu.higherKind.Mid
 import tofu.syntax.monadic._
-import tofu.syntax.raise._
 import tofu.syntax.monoid.TofuSemigroupOps
+import tofu.syntax.raise._
+import tofu.{ Handle, Raise }
 
 import scala.util.control.NoStackTrace
 
@@ -35,7 +33,7 @@ object ArrivalValidator {
 
   case class ValidatedArrival(trainId: TrainId, time: Actual, expectedTrain: ExpectedTrain)
 
-  private class Log[F[_]: FlatMap: Logger] extends ArrivalValidator[Mid[F, *]] {
+  private class Log[F[_]: FlatMap: Logging] extends ArrivalValidator[Mid[F, *]] {
     def validate(arrival: Arrival): Mid[F, ValidatedArrival] = { validation =>
       F.info(s"Validating $arrival") *> validation <* F.info(s"Train ${arrival.trainId} validated")
     }
@@ -56,7 +54,7 @@ object ArrivalValidator {
         }
   }
 
-  def make[F[_]: Monad: Logger: ArrivalError.Raising: Tracing](
+  def make[F[_]: Monad: Logging: ArrivalError.Raising: Tracing](
     expectedTrains: ExpectedTrains[F]
   ): ArrivalValidator[F] = {
     val service = new Impl[F](expectedTrains)

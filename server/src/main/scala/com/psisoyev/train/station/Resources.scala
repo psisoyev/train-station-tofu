@@ -4,6 +4,7 @@ import cats.effect.{ Concurrent, ContextShift, Resource, Sync }
 import cats.implicits._
 import cats.{ Inject, Parallel }
 import com.psisoyev.train.station.Context.WithCtx
+import com.psisoyev.train.station.EventLogger.EventFlow
 import cr.pulsar.{ Consumer, Producer, Pulsar, Subscription, Topic, Config => PulsarConfig }
 import io.chrisdavenport.log4cats.StructuredLogger
 import io.circe.Encoder
@@ -37,11 +38,11 @@ object Resources {
           .withType(Subscription.Type.Failover)
           .build
 
-      Consumer.withLogger[I, E](client, topic(config.pulsar, city), subscription, EventLogger.logEvents("in"))
+      Consumer.withLogger[I, E](client, topic(config.pulsar, city), subscription, EventLogger.logEvents(EventFlow.In))
     }
 
     def producer(client: Pulsar.T, config: Config): Resource[I, Producer[I, E]] =
-      Producer.withLogger[I, E](client, topic(config.pulsar, config.city), EventLogger.logEvents("out"))
+      Producer.withLogger[I, E](client, topic(config.pulsar, config.city), EventLogger.logEvents(EventFlow.Out))
 
     for {
       config    <- Resource.liftF(Config.load[I])
