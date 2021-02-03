@@ -54,7 +54,7 @@ object Dependencies {
 object Version {
   val cats = "2.3.1"
   val zioCats = "2.2.0.1"
-  val zio = "1.0.4"
+  val zio = "1.0.4-2"
   val fs2Core = "2.4.2"
   val kindProjector = "0.11.3"
   val ciris = "1.2.1"
