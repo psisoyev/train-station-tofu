@@ -6,9 +6,10 @@ import cats.effect.concurrent.Ref
 import cats.implicits._
 import com.psisoyev.train.station.arrival.ExpectedTrains.ExpectedTrain
 import cr.pulsar.{ MessageKey, Producer }
-import io.chrisdavenport.log4cats.Logger
+import zio.interop.catz._
 import org.apache.pulsar.client.api.MessageId
 import tofu.generate.GenUUID
+import tofu.logging.Logging
 import zio.Task
 import zio.test.DefaultRunnableSpec
 
@@ -33,10 +34,8 @@ trait BaseSpec extends DefaultRunnableSpec {
   implicit def fakeUuidGen[F[_]: Applicative]: GenUUID[F] = new GenUUID[F] {
     override def randomUUID: F[UUID] = F.pure(fakeUuid)
   }
-  implicit def fakeTracing                                = new Tracing[F] {
+  implicit def fakeTracing: Tracing[F]                    = new Tracing[F] {
     override def traced[A](opName: String)(fa: F[A]): F[A] = fa
   }
-  implicit def fakeLogging                                = new Logging[F] {
-    override def info(str: String): F[Unit] = Task.unit
-  }
+  implicit def fakeLogging: Logging[F]                    = Logging.empty[F]
 }

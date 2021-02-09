@@ -6,10 +6,11 @@ import com.psisoyev.train.station.arrival.ArrivalValidator.ArrivalError.Unexpect
 import com.psisoyev.train.station.arrival.ArrivalValidator.ValidatedArrival
 import com.psisoyev.train.station.arrival.Arrivals.Arrival
 import com.psisoyev.train.station.arrival.ExpectedTrains.ExpectedTrain
-import com.psisoyev.train.station.{ Actual, Logging, Tracing, TrainId }
+import com.psisoyev.train.station.{ Actual, Tracing, TrainId }
 import derevo.derive
 import derevo.tagless.applyK
 import tofu.higherKind.Mid
+import tofu.logging.Logging
 import tofu.syntax.monadic._
 import tofu.syntax.monoid.TofuSemigroupOps
 import tofu.syntax.raise._

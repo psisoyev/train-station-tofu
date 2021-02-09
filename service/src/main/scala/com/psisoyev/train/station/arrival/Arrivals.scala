@@ -4,13 +4,14 @@ import cats.{ FlatMap, Functor, Monad }
 import com.psisoyev.train.station.Event.Arrived
 import com.psisoyev.train.station.Tracing.ops.TracingOps
 import com.psisoyev.train.station.arrival.ArrivalValidator.ValidatedArrival
-import com.psisoyev.train.station.{ Actual, City, EventId, Logging, To, Tracing, TrainId }
+import com.psisoyev.train.station.{ Actual, City, EventId, To, Tracing, TrainId }
 import derevo.derive
 import derevo.tagless.applyK
 import io.circe.Decoder
 import io.circe.generic.semiauto._
 import tofu.generate.GenUUID
 import tofu.higherKind.Mid
+import tofu.logging.Logging
 import tofu.syntax.monadic._
 import tofu.syntax.monoid.TofuSemigroupOps
 

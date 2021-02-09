@@ -12,6 +12,7 @@ import io.circe.Decoder
 import io.circe.generic.semiauto.deriveDecoder
 import tofu.generate.GenUUID
 import tofu.higherKind.Mid
+import tofu.logging.Logging
 import tofu.syntax.monadic._
 import tofu.syntax.monoid.TofuSemigroupOps
 import tofu.syntax.raise._

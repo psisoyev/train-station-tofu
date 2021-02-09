@@ -1,13 +1,14 @@
 package com.psisoyev.train.station.departure
 
 import cats.{ Applicative, FlatMap, Monad }
+import com.psisoyev.train.station.City
 import com.psisoyev.train.station.Event.Departed
 import com.psisoyev.train.station.arrival.ExpectedTrains
 import com.psisoyev.train.station.arrival.ExpectedTrains.ExpectedTrain
-import com.psisoyev.train.station.{ City, Logging }
 import derevo.derive
 import derevo.tagless.applyK
 import tofu.higherKind.Mid
+import tofu.logging.Logging
 import tofu.syntax.monadic._
 
 @derive(applyK)
