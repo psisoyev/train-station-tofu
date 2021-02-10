@@ -1,6 +1,6 @@
 package com.psisoyev.train.station.departure
 
-import cats.{ Applicative, FlatMap, Monad }
+import cats.{ FlatMap, Functor, Monad }
 import com.psisoyev.train.station.Event.Departed
 import com.psisoyev.train.station.Tracing.ops.TracingOps
 import com.psisoyev.train.station._
@@ -62,7 +62,7 @@ object Departures {
     }
   }
 
-  private class Impl[F[_]: Applicative: GenUUID](city: City) extends Departures[F] {
+  private class Impl[F[_]: Functor: GenUUID](city: City) extends Departures[F] {
     override def register(departure: Departure): F[Departed] =
       F.randomUUID.map { id =>
         Departed(
