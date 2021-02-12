@@ -63,7 +63,7 @@ object Version {
   val newtype = "0.4.4"
   val neutron = "0.0.4"
   val contextApplied = "0.1.4"
-  val tofu = "0.9.1"
+  val tofu = "0.9.2"
   val betterMonadicFor = "0.3.1"
   val logback = "1.2.3"
   val log4cats = "1.1.1"
