@@ -14,12 +14,12 @@ object Dependencies {
   ).map(_ % Version.zio % Test)
 
   val tofu = List(
-    "ru.tinkoff" %% "tofu",
-    "ru.tinkoff" %% "tofu-logging",
-    "ru.tinkoff" %% "tofu-logging-log4cats",
-    "ru.tinkoff" %% "tofu-logging-layout",
-    "ru.tinkoff" %% "tofu-zio-core",
-    "ru.tinkoff" %% "tofu-zio-logging"
+    "tf.tofu" %% "tofu",
+    "tf.tofu" %% "tofu-logging",
+    "tf.tofu" %% "tofu-logging-log4cats",
+    "tf.tofu" %% "tofu-logging-layout",
+    "tf.tofu" %% "tofu-zio-core",
+    "tf.tofu" %% "tofu-zio-logging"
   ).map(_ % Version.tofu)
 
   val http4s = List(
@@ -63,7 +63,7 @@ object Version {
   val newtype = "0.4.4"
   val neutron = "0.0.4"
   val contextApplied = "0.1.4"
-  val tofu = "0.9.2"
+  val tofu = "0.10.2"
   val betterMonadicFor = "0.3.1"
   val logback = "1.2.3"
   val log4cats = "1.1.1"
