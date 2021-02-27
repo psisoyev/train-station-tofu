@@ -22,6 +22,11 @@ object Dependencies {
     "tf.tofu" %% "tofu-zio-logging"
   ).map(_ % Version.tofu)
 
+  val derevo = List(
+    "tf.tofu" %% "derevo-cats",
+    "tf.tofu" %% "derevo-circe"
+  ).map(_ % Version.derevo)
+
   val http4s = List(
     "org.http4s" %% "http4s-dsl",
     "org.http4s" %% "http4s-circe",
@@ -64,6 +69,7 @@ object Version {
   val neutron = "0.0.4"
   val contextApplied = "0.1.4"
   val tofu = "0.10.2"
+  val derevo = "0.12.1"
   val betterMonadicFor = "0.3.1"
   val logback = "1.2.3"
   val log4cats = "1.1.1"
