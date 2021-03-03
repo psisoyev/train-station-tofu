@@ -6,7 +6,7 @@ object Dependencies {
   val zio = List(zioCore, zioCats)
 
   val cats = "org.typelevel" %% "cats-core" % Version.cats
-  val catsEffect = "org.typelevel" %% "cats-effect" % Version.cats
+  val catsEffect = "org.typelevel" %% "cats-effect" % Version.catsEffect
 
   val zioTest = List(
     "dev.zio" %% "zio-test",
@@ -58,6 +58,7 @@ object Dependencies {
 
 object Version {
   val cats = "2.3.1"
+  val catsEffect = "2.3.1"
   val zioCats = "2.3.1.0"
   val zio = "1.0.4-2"
   val fs2Core = "2.4.2"
