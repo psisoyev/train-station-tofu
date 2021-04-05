@@ -3,9 +3,9 @@ package com.psisoyev.train.station
 import cats.Show
 import cats.implicits.toShow
 import cr.pulsar.Topic
-import io.chrisdavenport.log4cats.StructuredLogger
 import io.circe.Encoder
 import io.circe.syntax._
+import org.typelevel.log4cats.StructuredLogger
 
 object EventLogger {
 

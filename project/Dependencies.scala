@@ -53,7 +53,7 @@ object Dependencies {
   val betterMonadicFor = "com.olegpy" %% "better-monadic-for" % Version.betterMonadicFor
 
   val logback = "ch.qos.logback" % "logback-classic" % Version.logback
-  val log4cats = "io.chrisdavenport" %% "log4cats-core" % Version.log4cats
+  val log4cats = "org.typelevel" %% "log4cats-core" % Version.log4cats
 }
 
 object Version {
@@ -73,5 +73,5 @@ object Version {
   val derevo = "0.12.2"
   val betterMonadicFor = "0.3.1"
   val logback = "1.2.3"
-  val log4cats = "1.1.1"
+  val log4cats = "2.0.1"
 }

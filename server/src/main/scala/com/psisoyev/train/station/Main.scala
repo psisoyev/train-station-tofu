@@ -7,8 +7,8 @@ import com.psisoyev.train.station.arrival.ExpectedTrains
 import com.psisoyev.train.station.arrival.ExpectedTrains.ExpectedTrain
 import com.psisoyev.train.station.departure.DepartureTracker
 import cr.pulsar.schema.circe.circeBytesInject
-import io.chrisdavenport.log4cats.StructuredLogger
 import org.http4s.{ Request, Response }
+import org.typelevel.log4cats.StructuredLogger
 import tofu.logging.Logging
 import tofu.logging.log4cats._
 import tofu.logging.zlogs.ZLogs
