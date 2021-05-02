@@ -45,7 +45,7 @@ object Resources {
       Producer.withLogger[I, E](client, topic(config.pulsar, config.city), EventLogger.logEvents(EventFlow.Out))
 
     for {
-      config    <- Resource.liftF(Config.load[I])
+      config    <- Resource.eval(Config.load[I])
       client    <- Pulsar.create[I](config.pulsar.url)
       producer  <- producer(client, config)
       consumers <- config.connectedTo.traverse(consumer(client, config, _))
