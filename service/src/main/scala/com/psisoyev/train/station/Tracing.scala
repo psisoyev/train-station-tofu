@@ -2,7 +2,7 @@ package com.psisoyev.train.station
 
 import cats.FlatMap
 import com.psisoyev.train.station.Context._
-import io.chrisdavenport.log4cats.StructuredLogger
+import org.typelevel.log4cats.StructuredLogger
 import tofu.syntax.context.askF
 import tofu.syntax.monadic._
 

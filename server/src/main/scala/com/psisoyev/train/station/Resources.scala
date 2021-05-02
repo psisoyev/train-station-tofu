@@ -6,7 +6,7 @@ import cats.{ Inject, Parallel }
 import com.psisoyev.train.station.Context.WithCtx
 import com.psisoyev.train.station.EventLogger.EventFlow
 import cr.pulsar.{ Consumer, Producer, Pulsar, Subscription, Topic, Config => PulsarConfig }
-import io.chrisdavenport.log4cats.StructuredLogger
+import org.typelevel.log4cats.StructuredLogger
 import io.circe.Encoder
 
 final case class Resources[I[_], F[_], E](
