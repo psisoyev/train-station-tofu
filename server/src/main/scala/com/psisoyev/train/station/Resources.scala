@@ -1,6 +1,6 @@
 package com.psisoyev.train.station
 
-import cats.effect.{ Concurrent, ContextShift, Resource, Sync }
+import cats.effect.{ Concurrent, Resource, Sync }
 import cats.implicits._
 import cats.{ Inject, Parallel }
 import com.psisoyev.train.station.Context.WithCtx
