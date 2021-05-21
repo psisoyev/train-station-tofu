@@ -58,11 +58,11 @@ object Dependencies {
 
 object Version {
   val zio = "1.0.8"
-  val cats = "2.6.0"
+  val cats = "2.6.1"
   val catsEffect = "2.5.0"
   val zioCats = "2.5.1.0"
   val fs2Core = "2.4.2"
-  val kindProjector = "0.11.3"
+  val kindProjector = "0.13.0"
   val ciris = "1.2.1"
   val http4s = "1.0-234-d1a2b53"
   val circe = "0.13.0"
@@ -73,5 +73,5 @@ object Version {
   val derevo = "0.12.5"
   val betterMonadicFor = "0.3.1"
   val logback = "1.2.3"
-  val log4cats = "1.3.0"
+  val log4cats = "1.3.1"
 }
