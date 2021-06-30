@@ -70,7 +70,7 @@ object Version {
   val neutron = "0.0.4"
   val contextApplied = "0.1.4"
   val tofu = "0.10.2"
-  val derevo = "0.12.5"
+  val derevo = "0.12.6"
   val betterMonadicFor = "0.3.1"
   val logback = "1.2.3"
   val log4cats = "1.3.1"
