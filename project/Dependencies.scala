@@ -73,5 +73,5 @@ object Version {
   val derevo = "0.12.6"
   val betterMonadicFor = "0.3.1"
   val logback = "1.2.5"
-  val log4cats = "1.3.1"
+  val log4cats = "2.1.1"
 }
