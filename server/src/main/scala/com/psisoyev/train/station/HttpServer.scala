@@ -1,11 +1,12 @@
 package com.psisoyev.train.station
 
-import cats.effect.{ ConcurrentEffect, Timer }
+import cats.effect.ConcurrentEffect
 import com.psisoyev.train.station.Main.{ platform, Routes }
 import org.http4s.server.blaze.BlazeServerBuilder
+import cats.effect.Temporal
 
 object HttpServer {
-  def start[Init[_]: ConcurrentEffect: Timer](
+  def start[Init[_]: ConcurrentEffect: Temporal](
     config: Config,
     routes: Routes[Init]
   ): Init[Unit] =
