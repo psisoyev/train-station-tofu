@@ -2,7 +2,6 @@ package com.psisoyev.train.station
 
 import cats.data.Kleisli
 import cats.effect.ConcurrentEffect
-import cats.effect.concurrent.Ref
 import com.psisoyev.train.station.arrival.ExpectedTrains
 import com.psisoyev.train.station.arrival.ExpectedTrains.ExpectedTrain
 import com.psisoyev.train.station.departure.DepartureTracker
@@ -16,6 +15,7 @@ import tofu.zioInstances.implicits._
 import zio.interop.catz._
 import zio.interop.catz.implicits._
 import zio.{ Ref => _, _ }
+import cats.effect.Ref
 
 object Main extends zio.App {
   type Init[T]      = Task[T]
