@@ -57,7 +57,7 @@ object Dependencies {
 }
 
 object Version {
-  val cats             = "2.6.1"
+  val cats             = "2.7.0"
   val catsEffect       = "2.5.4"
   val zioCats          = "2.5.1.0"
   val zio              = "1.0.12"
@@ -73,5 +73,5 @@ object Version {
   val derevo           = "0.12.8"
   val betterMonadicFor = "0.3.1"
   val logback          = "1.2.6"
-  val log4cats         = "1.3.1"
+  val log4cats         = "1.4.0"
 }
