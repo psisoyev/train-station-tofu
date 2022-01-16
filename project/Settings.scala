@@ -1,14 +1,14 @@
 import Dependencies._
 import com.typesafe.sbt.packager.Keys._
 import org.scalafmt.sbt.ScalafmtPlugin.autoImport.scalafmtOnCompile
-import sbt.Keys.{scalacOptions, _}
+import sbt.Keys.{ scalacOptions, _ }
 import sbt._
 
 object Settings {
 
   val commonSettings =
     Seq(
-      scalaVersion := "2.13.7",
+      scalaVersion := "2.13.8",
       scalacOptions := Seq(
         "-Ymacro-annotations",
         "-deprecation",
@@ -39,7 +39,7 @@ object Settings {
     )
 
   val serviceDependencies = List(cats, catsEffect, neutronCore, zioCats) ++ zioTest ++ tofu
-  val routeDependencies = http4s
-  val serverDependencies = List(neutronCirce, ciris, logback, log4cats) ++ zio
-  val domainDependencies = List(newtype) ++ circe ++ derevo
+  val routeDependencies   = http4s
+  val serverDependencies  = List(neutronCirce, ciris, logback, log4cats) ++ zio
+  val domainDependencies  = List(newtype) ++ circe ++ derevo
 }
