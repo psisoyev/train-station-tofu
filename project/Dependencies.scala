@@ -67,7 +67,7 @@ object Version {
   val http4s           = "1.0-234-d1a2b53"
   val circe            = "0.14.1"
   val newtype          = "0.4.4"
-  val neutron          = "0.0.4"
+  val neutron          = "0.0.9"
   val contextApplied   = "0.1.4"
   val tofu             = "0.10.2"
   val derevo           = "0.12.8"
