@@ -2,7 +2,6 @@ package com.psisoyev.train.station
 
 import cats.Applicative
 import cats.effect.Sync
-import cats.effect.concurrent.Ref
 import cats.implicits._
 import com.psisoyev.train.station.arrival.ExpectedTrains.ExpectedTrain
 import cr.pulsar.{ MessageKey, Producer }
@@ -14,6 +13,7 @@ import zio.Task
 import zio.test.DefaultRunnableSpec
 
 import java.util.UUID
+import cats.effect.Ref
 
 trait BaseSpec extends DefaultRunnableSpec {
   type F[A]           = Task[A]
