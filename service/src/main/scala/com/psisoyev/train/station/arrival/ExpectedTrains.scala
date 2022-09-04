@@ -2,6 +2,7 @@ package com.psisoyev.train.station.arrival
 
 import cats.Functor
 import cats.effect.concurrent.Ref
+import cats.implicits._
 import com.psisoyev.train.station.arrival.ExpectedTrains.ExpectedTrain
 import com.psisoyev.train.station.{ Expected, From, TrainId }
 
