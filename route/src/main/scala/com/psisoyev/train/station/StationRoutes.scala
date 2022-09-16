@@ -1,6 +1,4 @@
 package com.psisoyev.train.station
-
-import cats.implicits._
 import cats.{ Defer, FlatMap, Monad }
 import com.psisoyev.train.station.Context.{ withUserContext, UserId }
 import com.psisoyev.train.station.arrival.ArrivalValidator.ArrivalError
