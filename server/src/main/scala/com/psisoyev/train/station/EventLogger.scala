@@ -1,6 +1,7 @@
 package com.psisoyev.train.station
 
 import cats.Show
+import cats.implicits.toShow
 import cr.pulsar.Topic
 import org.typelevel.log4cats.StructuredLogger
 import io.circe.Encoder

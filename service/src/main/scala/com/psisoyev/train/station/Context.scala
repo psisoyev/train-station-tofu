@@ -1,6 +1,7 @@
 package com.psisoyev.train.station
 
 import cats.FlatMap
+import cats.implicits._
 import com.psisoyev.train.station.Context.{ TraceId, UserId }
 import derevo.derive
 import io.estatico.newtype.Coercible
