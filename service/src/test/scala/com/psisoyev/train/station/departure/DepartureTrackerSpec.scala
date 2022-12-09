@@ -1,6 +1,7 @@
 package com.psisoyev.train.station.departure
 
 import cats.effect.concurrent.Ref
+import cats.implicits._
 import com.psisoyev.train.station.Generators._
 import com.psisoyev.train.station.arrival.ExpectedTrains
 import com.psisoyev.train.station.arrival.ExpectedTrains.ExpectedTrain
