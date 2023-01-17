@@ -1,6 +1,5 @@
 package com.psisoyev.train.station.arrival
 
-import cats.effect.concurrent.Ref
 import com.psisoyev.train.station.Event.Arrived
 import com.psisoyev.train.station.Generators._
 import com.psisoyev.train.station.arrival.ArrivalValidator.ValidatedArrival
@@ -10,6 +9,7 @@ import zio.interop.catz._
 import zio.test.Assertion._
 import zio.test._
 import zio.test.environment.TestEnvironment
+import cats.effect.Ref
 
 object ArrivalsSpec extends BaseSpec {
   override def spec: ZSpec[TestEnvironment, Failure] =
